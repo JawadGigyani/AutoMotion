@@ -2,7 +2,7 @@
 
 **Transform any GitHub repository into an automated video summary.**
 
-[![Watch the Demo on YouTube](https://img.shields.io/badge/YouTube-Watch_Demo-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/watch?v=INSERT_YOUR_VIDEO_ID_HERE)
+[![Watch the Demo on YouTube](https://img.shields.io/badge/YouTube-Watch_Demo-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://youtu.be/5tpIs1Sgbh4)
 
 ## Overview
 
