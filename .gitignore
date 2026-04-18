@@ -1,0 +1,27 @@
+# IDEs
+.idea/
+.vscode/
+
+# Python
+__pycache__/
+*.pyc
+venv/
+.env
+
+# Node.js
+node_modules/
+dist/
+.next/
+
+# Project specifics
+backend/outputs/
+
+# Mac
+.DS_Store
+
+# Build files
+*.log
+
+# Chat logs / AI Docs
+*.md
+!README.md
