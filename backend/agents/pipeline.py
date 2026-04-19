@@ -183,10 +183,13 @@ async def generate_voice(state: PipelineState) -> dict[str, Any]:
 
     job_dir = get_job_dir(job_id)
 
+    # User-selected voice override
+    user_voice_id = state.get("voice_id", None)
+
     try:
         # ── Primary: per-scene clips → exact durations ──────────────────
         audio_path, scene_audio_durations = generate_per_scene_voiceovers(
-            scenes, job_dir
+            scenes, job_dir, voice_id=user_voice_id
         )
         audio_duration = sum(scene_audio_durations)
 
@@ -520,6 +523,7 @@ async def run_pipeline(
     repo_url: str,
     progress_callback: Optional[Callable] = None,
     theme_id: Optional[str] = None,
+    voice_id: Optional[str] = None,
 ) -> dict[str, Any]:
     """
     Run the full video generation pipeline.
@@ -529,6 +533,7 @@ async def run_pipeline(
         repo_url: GitHub repository URL
         progress_callback: Optional async callback for progress updates
         theme_id: Optional theme override (e.g. "dark_cinematic", "neon_cyberpunk")
+        voice_id: Optional ElevenLabs voice override
 
     Returns:
         Final pipeline state dict
@@ -552,12 +557,16 @@ async def run_pipeline(
 
         if theme_id and theme_id != "auto":
             initial_state["theme_id"] = theme_id
+        if voice_id and voice_id != "auto":
+            initial_state["voice_id"] = voice_id
 
         print("=" * 60)
         print(f"AutoMotion Pipeline — Job {job_id[:8]}...")
         print(f"Repository: {repo_url}")
         if theme_id and theme_id != "auto":
             print(f"Theme override: {theme_id}")
+        if voice_id and voice_id != "auto":
+            print(f"Voice override: {voice_id}")
         print("=" * 60 + "\n")
 
         # Run the pipeline

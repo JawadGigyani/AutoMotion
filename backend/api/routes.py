@@ -66,6 +66,7 @@ def start_cleanup_loop() -> None:
 class GenerateRequest(BaseModel):
     repo_url: str
     theme_id: Optional[str] = None
+    voice_id: Optional[str] = None
 
 
 class GenerateResponse(BaseModel):
@@ -92,7 +93,7 @@ class ResultResponse(BaseModel):
 
 # ── Background pipeline execution ──
 
-async def _run_pipeline_task(job_id: str, repo_url: str, theme_id: str = None):
+async def _run_pipeline_task(job_id: str, repo_url: str, theme_id: str = None, voice_id: str = None):
     """Run the LangGraph pipeline in the background with progress tracking."""
     try:
         jobs[job_id]["status"] = "processing"
@@ -111,6 +112,7 @@ async def _run_pipeline_task(job_id: str, repo_url: str, theme_id: str = None):
             repo_url=repo_url,
             progress_callback=on_progress,
             theme_id=theme_id,
+            voice_id=voice_id,
         )
 
         jobs[job_id]["status"] = "completed"
@@ -200,7 +202,7 @@ async def generate_video(request: GenerateRequest):
     }
 
     # Run pipeline in background
-    asyncio.create_task(_run_pipeline_task(job_id, repo_url, theme_id=request.theme_id))
+    asyncio.create_task(_run_pipeline_task(job_id, repo_url, theme_id=request.theme_id, voice_id=request.voice_id))
 
     print(f"\n[NEW] Job created: {job_id[:8]}... ({repo_url})")
 
@@ -254,6 +256,22 @@ async def get_themes():
         {"id": tid, "name": t["name"]}
         for tid, t in themes.items()
     ]
+
+
+# ── Curated voice list for the frontend selector ──
+AVAILABLE_VOICES = [
+    {"id": "CwhRBWXzGAHq8TQ4Fs17", "name": "Roger", "desc": "Male · American · Casual"},
+    {"id": "EXAVITQu4vr4xnSDxMaL", "name": "Sarah", "desc": "Female · American · Professional"},
+    {"id": "IKne3meq5aSn9XLyUdCD", "name": "Charlie", "desc": "Male · Australian · Energetic"},
+    {"id": "JBFqnCBsd6RMkjVDRZzb", "name": "George", "desc": "Male · British · Storyteller"},
+    {"id": "FGY2WhTYpPnrIDTdsKH5", "name": "Laura", "desc": "Female · American · Enthusiastic"},
+]
+
+
+@router.get("/voices")
+async def get_voices():
+    """Return available voice options for the voice selector dropdown."""
+    return AVAILABLE_VOICES
 
 
 # ── Pre-built sample gallery entries ──

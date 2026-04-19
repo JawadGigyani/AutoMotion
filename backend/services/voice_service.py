@@ -51,6 +51,7 @@ def _get_client() -> ElevenLabs:
 def generate_per_scene_voiceovers(
     scenes: list[dict],
     job_dir: Path | str,
+    voice_id: str | None = None,
 ) -> tuple[str, list[float]]:
     """
     Generate one MP3 clip per scene narration, trim leading silence from each,
@@ -64,6 +65,7 @@ def generate_per_scene_voiceovers(
     Args:
         scenes:   List of scene dicts, each must have a "narration" key.
         job_dir:  Directory where audio files will be written.
+        voice_id: Optional voice override. Falls back to ELEVENLABS_VOICE_ID.
 
     Returns:
         (combined_audio_path, scene_durations)
@@ -76,7 +78,8 @@ def generate_per_scene_voiceovers(
     job_dir = Path(job_dir)
     job_dir.mkdir(parents=True, exist_ok=True)
 
-    if not ELEVENLABS_VOICE_ID:
+    effective_voice_id = voice_id or ELEVENLABS_VOICE_ID
+    if not effective_voice_id:
         raise RuntimeError("ELEVENLABS_VOICE_ID is not set in .env")
 
     client = _get_client()
@@ -84,7 +87,7 @@ def generate_per_scene_voiceovers(
     total_chars = sum(len(s.get("narration", "")) for s in scenes)
     print(
         f"  [TTS] Generating {len(scenes)} per-scene clips "
-        f"({total_chars} total chars)..."
+        f"({total_chars} total chars | voice: {effective_voice_id[:12]}...)..."
     )
 
     scene_paths: list[str] = []
@@ -100,7 +103,7 @@ def generate_per_scene_voiceovers(
         # ── Generate TTS for this scene ──────────────────────────────────
         audio = client.text_to_speech.convert(
             text=narration,
-            voice_id=ELEVENLABS_VOICE_ID,
+            voice_id=effective_voice_id,
             model_id=ELEVENLABS_MODEL_ID,
             output_format="mp3_44100_128",
         )

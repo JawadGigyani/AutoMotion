@@ -20,6 +20,7 @@ class PipelineState(TypedDict, total=False):
     repo: str
     job_id: str
     theme_id: Optional[str]
+    voice_id: Optional[str]
 
     # ── GitHub Data (set by fetch_github_data node) ──
     readme: str

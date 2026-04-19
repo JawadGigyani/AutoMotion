@@ -11,9 +11,19 @@ const THEMES = [
   { id: "ocean_depth", name: "Ocean Depth" },
 ];
 
+const VOICES = [
+  { id: "auto", name: "Default" },
+  { id: "CwhRBWXzGAHq8TQ4Fs17", name: "Roger — Casual" },
+  { id: "EXAVITQu4vr4xnSDxMaL", name: "Sarah — Professional" },
+  { id: "IKne3meq5aSn9XLyUdCD", name: "Charlie — Energetic" },
+  { id: "JBFqnCBsd6RMkjVDRZzb", name: "George — Storyteller" },
+  { id: "FGY2WhTYpPnrIDTdsKH5", name: "Laura — Enthusiastic" },
+];
+
 export default function RepoInput() {
   const [url, setUrl] = useState("");
   const [themeId, setThemeId] = useState("auto");
+  const [voiceId, setVoiceId] = useState("auto");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
@@ -69,6 +79,9 @@ export default function RepoInput() {
       const body = { repo_url: normalizedUrl };
       if (themeId && themeId !== "auto") {
         body.theme_id = themeId;
+      }
+      if (voiceId && voiceId !== "auto") {
+        body.voice_id = voiceId;
       }
 
       const res = await fetch(`${backendUrl}/api/generate`, {
@@ -136,7 +149,7 @@ export default function RepoInput() {
           </button>
         </div>
 
-        {/* Theme selector */}
+        {/* Theme & Voice selectors */}
         <div className="options-row">
           <div className="option-group">
             <label className="option-label" htmlFor="theme-select">Theme</label>
@@ -149,6 +162,20 @@ export default function RepoInput() {
             >
               {THEMES.map((t) => (
                 <option key={t.id} value={t.id}>{t.name}</option>
+              ))}
+            </select>
+          </div>
+          <div className="option-group">
+            <label className="option-label" htmlFor="voice-select">Voice</label>
+            <select
+              id="voice-select"
+              className="option-select"
+              value={voiceId}
+              onChange={(e) => setVoiceId(e.target.value)}
+              disabled={loading}
+            >
+              {VOICES.map((v) => (
+                <option key={v.id} value={v.id}>{v.name}</option>
               ))}
             </select>
           </div>
