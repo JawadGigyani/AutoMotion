@@ -10,7 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from config import OUTPUTS_DIR, BACKEND_URL
-from api.routes import router
+from api.routes import router, start_cleanup_loop
 from api.websocket import ws_router
 
 
@@ -20,6 +20,7 @@ async def lifespan(app: FastAPI):
     print("\n[START] AutoMotion Backend")
     print(f"   Outputs: {OUTPUTS_DIR.resolve()}")
     print(f"   Backend: {BACKEND_URL}")
+    start_cleanup_loop()
     yield
     print("\n[STOP] Shutting down...")
 

@@ -3,6 +3,7 @@ AutoMotion — API Routes
 REST endpoints for video generation, status polling, and results.
 """
 import uuid
+import time
 import asyncio
 from typing import Optional
 
@@ -11,12 +12,53 @@ from pydantic import BaseModel
 
 from agents.pipeline import run_pipeline
 from api.websocket import send_progress_update
+from config import MAX_CONCURRENT_JOBS
+from utils.file_utils import cleanup_old_jobs
 
 router = APIRouter()
 
 
 # ── In-memory job store ──
+# Each job also records its creation timestamp for TTL-based cleanup.
+JOB_TTL_SECONDS = 45 * 60  # 45 minutes
+CLEANUP_INTERVAL_SECONDS = 5 * 60  # Run cleanup every 5 minutes
 jobs: dict[str, dict] = {}
+_cleanup_task: asyncio.Task | None = None
+
+
+async def _periodic_cleanup() -> None:
+    """Background loop: purge expired jobs from memory and disk every 5 min."""
+    while True:
+        await asyncio.sleep(CLEANUP_INTERVAL_SECONDS)
+        try:
+            now = time.time()
+            expired_ids = [
+                jid for jid, j in jobs.items()
+                if now - j.get("created_at", now) > JOB_TTL_SECONDS
+                and j.get("status") in ("completed", "failed")
+            ]
+            for jid in expired_ids:
+                jobs.pop(jid, None)
+
+            # Also clean up orphaned output directories on disk
+            disk_cleaned = cleanup_old_jobs(max_age_seconds=JOB_TTL_SECONDS)
+
+            if expired_ids or disk_cleaned:
+                print(
+                    f"[CLEANUP] Purged {len(expired_ids)} memory jobs, "
+                    f"{disk_cleaned} disk directories"
+                )
+        except Exception as e:
+            print(f"[CLEANUP] Error: {e}")
+
+
+def start_cleanup_loop() -> None:
+    """Start the periodic cleanup background task (call once at startup)."""
+    global _cleanup_task
+    if _cleanup_task is None:
+        _cleanup_task = asyncio.create_task(_periodic_cleanup())
+        print("[CLEANUP] Background cleanup started (TTL=45min, interval=5min)")
+
 
 
 # ── Request / Response models ──
@@ -99,6 +141,37 @@ async def _run_pipeline_task(job_id: str, repo_url: str):
 @router.post("/generate", response_model=GenerateResponse)
 async def generate_video(request: GenerateRequest):
     """Start video generation. Returns a job ID for polling or WebSocket."""
+
+    # ── Input validation ─────────────────────────────────────────────
+    repo_url = (request.repo_url or "").strip()
+    if not repo_url:
+        raise HTTPException(status_code=400, detail="repo_url is required")
+
+    # Basic sanity check — must look like a GitHub URL or owner/repo
+    url_lower = repo_url.lower()
+    is_github = (
+        "github.com/" in url_lower
+        or url_lower.count("/") == 1  # owner/repo shorthand
+    )
+    if not is_github:
+        raise HTTPException(
+            status_code=400,
+            detail="Only public GitHub repository URLs are supported.",
+        )
+
+    # ── Rate limiting ────────────────────────────────────────────────
+    active_jobs = sum(
+        1 for j in jobs.values()
+        if j.get("status") in ("pending", "processing")
+    )
+    if active_jobs >= MAX_CONCURRENT_JOBS:
+        raise HTTPException(
+            status_code=429,
+            detail=f"Server is busy — {active_jobs} jobs are already running. "
+                   f"Please try again in a minute.",
+        )
+
+    # ── Create the job ───────────────────────────────────────────────
     job_id = str(uuid.uuid4())
 
     jobs[job_id] = {
@@ -108,14 +181,15 @@ async def generate_video(request: GenerateRequest):
         "message": None,
         "video_url": None,
         "error": None,
-        "repo_url": request.repo_url,
+        "repo_url": repo_url,
         "theme": None,
+        "created_at": time.time(),
     }
 
     # Run pipeline in background
-    asyncio.create_task(_run_pipeline_task(job_id, request.repo_url))
+    asyncio.create_task(_run_pipeline_task(job_id, repo_url))
 
-    print(f"\n[NEW] Job created: {job_id[:8]}... ({request.repo_url})")
+    print(f"\n[NEW] Job created: {job_id[:8]}... ({repo_url})")
 
     return GenerateResponse(
         job_id=job_id,
