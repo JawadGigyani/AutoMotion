@@ -2,8 +2,18 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
+const THEMES = [
+  { id: "auto", name: "Auto (recommended)" },
+  { id: "dark_cinematic", name: "Dark Cinematic" },
+  { id: "neon_cyberpunk", name: "Neon Cyberpunk" },
+  { id: "minimal_light", name: "Minimal Light" },
+  { id: "terminal_green", name: "Terminal Green" },
+  { id: "ocean_depth", name: "Ocean Depth" },
+];
+
 export default function RepoInput() {
   const [url, setUrl] = useState("");
+  const [themeId, setThemeId] = useState("auto");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
@@ -56,10 +66,15 @@ export default function RepoInput() {
       process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
 
     try {
+      const body = { repo_url: normalizedUrl };
+      if (themeId && themeId !== "auto") {
+        body.theme_id = themeId;
+      }
+
       const res = await fetch(`${backendUrl}/api/generate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ repo_url: normalizedUrl }),
+        body: JSON.stringify(body),
       });
 
       if (!res.ok) {
@@ -119,6 +134,24 @@ export default function RepoInput() {
               <>Generate →</>
             )}
           </button>
+        </div>
+
+        {/* Theme selector */}
+        <div className="options-row">
+          <div className="option-group">
+            <label className="option-label" htmlFor="theme-select">Theme</label>
+            <select
+              id="theme-select"
+              className="option-select"
+              value={themeId}
+              onChange={(e) => setThemeId(e.target.value)}
+              disabled={loading}
+            >
+              {THEMES.map((t) => (
+                <option key={t.id} value={t.id}>{t.name}</option>
+              ))}
+            </select>
+          </div>
         </div>
 
         {error && <div className="input-error">{error}</div>}

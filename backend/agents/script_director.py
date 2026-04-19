@@ -155,13 +155,19 @@ async def write_script_and_scenes(state: PipelineState) -> dict[str, Any]:
             tech_stack=analysis.get("tech_stack", []),
         )
 
-    # Select theme using weighted-random based on repo characteristics
-    theme_hint = script.get("theme_hint", analysis.get("category_hint", ""))
-    theme = select_theme(
-        languages=state.get("languages", {}),
-        primary_language=state.get("language", ""),
-        theme_hint=theme_hint,
-    )
+    # Select theme — user override or weighted-random
+    user_theme_id = state.get("theme_id", "")
+    if user_theme_id and user_theme_id != "auto":
+        from services.theme_service import get_theme_by_id
+        theme = get_theme_by_id(user_theme_id)
+        print(f"  [THEME] User selected: {theme['name']}")
+    else:
+        theme_hint = script.get("theme_hint", analysis.get("category_hint", ""))
+        theme = select_theme(
+            languages=state.get("languages", {}),
+            primary_language=state.get("language", ""),
+            theme_hint=theme_hint,
+        )
 
     return {
         "script": script,

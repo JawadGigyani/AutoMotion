@@ -65,6 +65,7 @@ def start_cleanup_loop() -> None:
 
 class GenerateRequest(BaseModel):
     repo_url: str
+    theme_id: Optional[str] = None
 
 
 class GenerateResponse(BaseModel):
@@ -89,7 +90,7 @@ class ResultResponse(BaseModel):
 
 # ── Background pipeline execution ──
 
-async def _run_pipeline_task(job_id: str, repo_url: str):
+async def _run_pipeline_task(job_id: str, repo_url: str, theme_id: str = None):
     """Run the LangGraph pipeline in the background with progress tracking."""
     try:
         jobs[job_id]["status"] = "processing"
@@ -107,6 +108,7 @@ async def _run_pipeline_task(job_id: str, repo_url: str):
             job_id=job_id,
             repo_url=repo_url,
             progress_callback=on_progress,
+            theme_id=theme_id,
         )
 
         jobs[job_id]["status"] = "completed"
@@ -187,7 +189,7 @@ async def generate_video(request: GenerateRequest):
     }
 
     # Run pipeline in background
-    asyncio.create_task(_run_pipeline_task(job_id, repo_url))
+    asyncio.create_task(_run_pipeline_task(job_id, repo_url, theme_id=request.theme_id))
 
     print(f"\n[NEW] Job created: {job_id[:8]}... ({repo_url})")
 
@@ -229,3 +231,14 @@ async def get_result(job_id: str):
         repo_url=job["repo_url"],
         theme=job.get("theme"),
     )
+
+
+@router.get("/themes")
+async def get_themes():
+    """Return available video themes for the theme selector dropdown."""
+    from services.theme_service import get_all_themes
+    themes = get_all_themes()
+    return [
+        {"id": tid, "name": t["name"]}
+        for tid, t in themes.items()
+    ]

@@ -478,6 +478,7 @@ async def run_pipeline(
     job_id: str,
     repo_url: str,
     progress_callback: Optional[Callable] = None,
+    theme_id: Optional[str] = None,
 ) -> dict[str, Any]:
     """
     Run the full video generation pipeline.
@@ -486,6 +487,7 @@ async def run_pipeline(
         job_id: Unique job identifier
         repo_url: GitHub repository URL
         progress_callback: Optional async callback for progress updates
+        theme_id: Optional theme override (e.g. "dark_cinematic", "neon_cyberpunk")
 
     Returns:
         Final pipeline state dict
@@ -507,9 +509,14 @@ async def run_pipeline(
             "progress": 0,
         }
 
+        if theme_id and theme_id != "auto":
+            initial_state["theme_id"] = theme_id
+
         print("=" * 60)
         print(f"AutoMotion Pipeline — Job {job_id[:8]}...")
         print(f"Repository: {repo_url}")
+        if theme_id and theme_id != "auto":
+            print(f"Theme override: {theme_id}")
         print("=" * 60 + "\n")
 
         # Run the pipeline
