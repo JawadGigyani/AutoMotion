@@ -1,5 +1,5 @@
 """
-RepoReel — Theme Service
+AutoMotion — Theme Service
 Weighted-random selection of video themes based on repository characteristics.
 Ensures visual variety across generations so judges see different templates.
 """

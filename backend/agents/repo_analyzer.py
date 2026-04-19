@@ -1,5 +1,5 @@
 """
-RepoReel — Agent #1: Repository Analyzer
+AutoMotion — Agent #1: Repository Analyzer
 Uses Qwen2.5-Coder-32B-Instruct to analyze the codebase and produce
 structured JSON covering purpose, tech stack, features, architecture,
 and code highlights.

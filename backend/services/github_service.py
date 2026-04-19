@@ -1,5 +1,5 @@
 """
-RepoReel — GitHub Service
+AutoMotion — GitHub Service
 Fetches repository data from the GitHub REST API:
 metadata, README, file tree, and key source files.
 """
@@ -36,7 +36,7 @@ def _get_headers() -> dict[str, str]:
     """Build request headers with optional auth token."""
     headers = {
         "Accept": "application/vnd.github.v3+json",
-        "User-Agent": "RepoReel/1.0",
+        "User-Agent": "AutoMotion/1.0",
     }
     if GITHUB_TOKEN:
         headers["Authorization"] = f"Bearer {GITHUB_TOKEN}"

@@ -1,5 +1,5 @@
 """
-RepoReel — File Utilities
+AutoMotion — File Utilities
 Temp directory management and cleanup.
 """
 import shutil

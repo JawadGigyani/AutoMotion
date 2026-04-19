@@ -1,5 +1,5 @@
 /**
- * RepoReel — Typewriter Text Component
+ * AutoMotion — Typewriter Text Component
  * Reveals text character-by-character synced to frame count.
  */
 import React from "react";

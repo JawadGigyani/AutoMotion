@@ -1,5 +1,5 @@
 /**
- * RepoReel — Title Scene
+ * AutoMotion — Title Scene
  * Project name with tagline, animated accent line.
  */
 import React from "react";

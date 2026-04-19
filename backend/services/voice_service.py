@@ -1,5 +1,5 @@
 """
-RepoReel — Voice Service
+AutoMotion — Voice Service
 ElevenLabs TTS wrapper using the official Python SDK.
 
 Two generation strategies:

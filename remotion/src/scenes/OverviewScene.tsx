@@ -1,5 +1,5 @@
 /**
- * RepoReel — Overview Scene
+ * AutoMotion — Overview Scene
  * Project description with metadata badges.
  */
 import React from "react";

@@ -1,5 +1,5 @@
 """
-RepoReel — Integration Tests
+AutoMotion — Integration Tests
 =============================================================
 Tests the full stack end-to-end:
   1. Health checks  — backend + render server
@@ -8,7 +8,7 @@ Tests the full stack end-to-end:
   4. WebSocket      — live progress stream
 
 Usage:
-    # From the repoReel/backend directory, with venv activated:
+    # From the AutoMotion/backend directory, with venv activated:
     python test_integration.py
 
     # Run only health checks:
@@ -417,7 +417,7 @@ async def test_theme_variety(client: httpx.AsyncClient):
 
 
 async def main():
-    parser = argparse.ArgumentParser(description="RepoReel Integration Tests")
+    parser = argparse.ArgumentParser(description="AutoMotion Integration Tests")
     parser.add_argument("--health", action="store_true", help="Only run health checks")
     parser.add_argument(
         "--no-render", action="store_true", help="Skip the full pipeline test"
@@ -426,7 +426,7 @@ async def main():
     parser.add_argument("--ws", action="store_true", help="Also run WebSocket test")
     args = parser.parse_args()
 
-    print(f"\n{BOLD}RepoReel — Integration Tests{RESET}")
+    print(f"\n{BOLD}AutoMotion — Integration Tests{RESET}")
     print(f"{'═' * 56}")
     print(f"  Backend:       {BACKEND_URL}")
     print(f"  Render server: {RENDER_URL}")

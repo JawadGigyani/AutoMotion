@@ -1,5 +1,5 @@
 /**
- * RepoReel — Theme Context Provider
+ * AutoMotion — Theme Context Provider
  */
 import React, { createContext, useContext } from "react";
 import { Theme, darkCinematic } from "./index";

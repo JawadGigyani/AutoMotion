@@ -1,5 +1,5 @@
 /**
- * RepoReel — Features Scene
+ * AutoMotion — Features Scene
  * Feature cards sliding in with staggered timing.
  */
 import React from "react";

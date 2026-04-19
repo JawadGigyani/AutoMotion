@@ -1,5 +1,5 @@
 """
-RepoReel — Robust JSON Extractor
+AutoMotion — Robust JSON Extractor
 Handles LLM responses that wrap JSON in markdown code blocks or include extra text.
 """
 import json

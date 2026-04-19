@@ -1,5 +1,5 @@
 /**
- * RepoReel — Main Video Composition
+ * AutoMotion — Main Video Composition
  * Orchestrates all scenes using TransitionSeries with Audio.
  */
 import React from "react";

@@ -1,5 +1,5 @@
 """
-RepoReel — Phase 2 Pipeline Tests
+AutoMotion — Phase 2 Pipeline Tests
 Tests pipeline compilation and runs stages 1-4 against a real repo.
 Stages 5-7 (voice, frames, render) are skipped as they need ElevenLabs + Remotion.
 
@@ -126,7 +126,7 @@ async def test_stages_3_4(owner: str = "pallets", repo: str = "flask"):
 
 async def main():
     print("=" * 60)
-    print("RepoReel - Phase 2 Pipeline Tests")
+    print("AutoMotion - Phase 2 Pipeline Tests")
     print("=" * 60)
 
     await test_pipeline_compilation()

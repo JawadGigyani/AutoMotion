@@ -1,5 +1,5 @@
 /**
- * RepoReel — Code Highlight Scene
+ * AutoMotion — Code Highlight Scene
  * Shows a real code snippet from the repo in a VS Code-styled editor.
  */
 import React from "react";

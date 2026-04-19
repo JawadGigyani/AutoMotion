@@ -1,5 +1,5 @@
 """
-RepoReel — Agent #2: Script Writer + Scene Director (Merged)
+AutoMotion — Agent #2: Script Writer + Scene Director (Merged)
 Uses Qwen2.5-72B-Instruct to write the narration script AND
 specify visual scenes in a single LLM call.
 Also handles theme selection via the theme_service.

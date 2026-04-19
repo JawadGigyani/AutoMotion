@@ -1,5 +1,5 @@
 /**
- * RepoReel — Remotion Root
+ * AutoMotion — Remotion Root
  * Registers the RepoReel composition with calculateMetadata for dynamic duration.
  */
 import React from "react";
@@ -19,9 +19,9 @@ export const RemotionRoot: React.FC = () => {
       defaultProps={{
         scenes: [
           {
-            narration: "Welcome to RepoReel",
+            narration: "Welcome to AutoMotion",
             visual_type: "title",
-            content: { title: "RepoReel", tagline: "AI-powered repo explainers" },
+            content: { title: "AutoMotion", tagline: "AI-powered repo explainers" },
             animation: "fade_in",
             background_variant: "gradient",
             start: 0,

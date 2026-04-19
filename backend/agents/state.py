@@ -1,5 +1,5 @@
 """
-RepoReel — Pipeline State
+AutoMotion — Pipeline State
 TypedDict shared across all LangGraph nodes.
 """
 

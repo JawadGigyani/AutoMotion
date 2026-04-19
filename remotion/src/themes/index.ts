@@ -1,5 +1,5 @@
 /**
- * RepoReel — Theme Type Definitions & All Theme Data
+ * AutoMotion — Theme Type Definitions & All Theme Data
  */
 
 export type ThemeColors = {

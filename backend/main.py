@@ -1,5 +1,5 @@
 """
-RepoReel — FastAPI Application
+AutoMotion — FastAPI Application
 Main entry point for the backend server.
 """
 import uuid
@@ -51,4 +51,9 @@ app.include_router(ws_router)
 
 @app.get("/health")
 async def health():
-    return {"status": "ok", "service": "reporeel-backend"}
+    return {"status": "ok", "service": "automotion-backend"}
+
+
+@app.get("/")
+async def root():
+    return {"status": "ok", "service": "automotion-backend"}

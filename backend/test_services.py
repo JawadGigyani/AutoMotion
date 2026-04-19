@@ -1,5 +1,5 @@
 """
-RepoReel — Phase 1 Service Tests
+AutoMotion — Phase 1 Service Tests
 Quick smoke tests for all backend services.
 Run with: python test_services.py
 """
@@ -167,7 +167,7 @@ def test_file_utils():
 
 def main():
     print("=" * 60)
-    print("RepoReel — Phase 1 Service Tests")
+    print("AutoMotion — Phase 1 Service Tests")
     print("=" * 60)
 
     test_config()

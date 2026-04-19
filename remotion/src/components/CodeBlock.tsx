@@ -1,5 +1,5 @@
 /**
- * RepoReel — Code Block Component
+ * AutoMotion — Code Block Component
  * VS Code-inspired code display with line-by-line reveal.
  */
 import React from "react";

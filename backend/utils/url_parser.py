@@ -1,5 +1,5 @@
 """
-RepoReel — GitHub URL Parser & Validator
+AutoMotion — GitHub URL Parser & Validator
 Extracts owner/repo from various GitHub URL formats and validates them.
 """
 import re

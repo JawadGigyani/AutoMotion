@@ -238,7 +238,7 @@ async def generate_voice(state: PipelineState) -> dict[str, Any]:
 
 # ── Node 6: Calculate Frames + Scene Timing ──
 
-# Must match transitionDuration in remotion/src/RepoReelVideo.tsx
+# Must match transitionDuration in remotion/src/RepoReelVideo.tsx (keeping filename unchanged)
 REMOTION_TRANSITION_FRAMES = 12
 
 

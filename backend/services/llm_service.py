@@ -1,5 +1,5 @@
 """
-RepoReel — LLM Service
+AutoMotion — LLM Service
 Wrapper around featherless.ai (OpenAI-compatible) using LangChain.
 Provides code-specialized and general-purpose model access with fallback chain.
 """

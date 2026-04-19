@@ -1,5 +1,5 @@
 /**
- * RepoReel — Noise Background Component
+ * AutoMotion — Noise Background Component
  * Animated procedural background using @remotion/noise
  */
 import React from "react";

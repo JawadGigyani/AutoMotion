@@ -1,5 +1,5 @@
 /**
- * RepoReel — Remotion Render Server
+ * AutoMotion — Remotion Render Server
  * Express server that bundles Remotion project once on startup,
  * then accepts render requests from the Python backend.
  *
@@ -13,6 +13,10 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+// Use system-installed Chromium if available (set by Dockerfile)
+const chromiumPath = process.env.PUPPETEER_EXECUTABLE_PATH || null;
+
 const app = express();
 
 app.use(cors());
@@ -81,19 +85,22 @@ app.post("/render", async (req, res) => {
     };
 
     // Select composition (triggers calculateMetadata)
-    const composition = await selectComposition({
+    const compositionOpts = {
       serveUrl,
       id: "RepoReel",
       inputProps,
       port: 3100,
-    });
+    };
+    if (chromiumPath) compositionOpts.chromiumExecutable = chromiumPath;
+
+    const composition = await selectComposition(compositionOpts);
 
     console.log(
       `   Composition: ${composition.durationInFrames} frames @ ${composition.fps}fps`
     );
 
     // Render the video
-    await renderMedia({
+    const renderOpts = {
       composition,
       serveUrl,
       codec: "h264",
@@ -107,7 +114,10 @@ app.post("/render", async (req, res) => {
           console.log(`   Render progress: ${pct}%`);
         }
       },
-    });
+    };
+    if (chromiumPath) renderOpts.chromiumExecutable = chromiumPath;
+
+    await renderMedia(renderOpts);
 
     const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
     console.log(`✅ Render complete in ${elapsed}s → ${outputPath}`);
@@ -122,7 +132,7 @@ app.post("/render", async (req, res) => {
 // ── Start server ──
 const PORT = 3001;
 app.listen(PORT, async () => {
-  console.log(`\n🎬 RepoReel Render Server on http://localhost:${PORT}`);
+  console.log(`\n🎬 AutoMotion Render Server on http://localhost:${PORT}`);
   console.log(`   Health: http://localhost:${PORT}/health`);
   console.log(`   Static: http://localhost:${PORT}/static/\n`);
 

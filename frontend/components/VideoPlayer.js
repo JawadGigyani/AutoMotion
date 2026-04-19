@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * RepoReel — VideoPlayer Component
+ * AutoMotion — VideoPlayer Component
  * Displays the rendered video with download and GitHub link actions.
  */
 export default function VideoPlayer({ videoUrl, repoUrl, theme }) {
@@ -13,7 +13,7 @@ export default function VideoPlayer({ videoUrl, repoUrl, theme }) {
       const blobUrl = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = blobUrl;
-      a.download = 'reporeel.mp4';
+      a.download = 'automotion.mp4';
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -50,7 +50,7 @@ export default function VideoPlayer({ videoUrl, repoUrl, theme }) {
             e.target.style.display = 'none';
             const msg = document.createElement('div');
             msg.style.cssText =
-              'aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;color:#6b6b6b;font-size:14px;font-family:monospace;background:#0d0d0d;';
+              'aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;color:#6b6b6b;font-size:14px;font-family:monospace;background:#e9ecef;border:1px solid #ddd;border-radius:8px;';
             msg.textContent = 'Video unavailable — check backend is running';
             e.target.parentNode.insertBefore(msg, e.target);
           }}

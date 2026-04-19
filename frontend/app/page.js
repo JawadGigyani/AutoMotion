@@ -15,7 +15,7 @@ export default function Home() {
       <div className="container">
         {/* ── Hero ── */}
         <section className="hero animate-enter" style={{ animationDelay: "100ms" }}>
-          <div className="hero-eyebrow">Automated Expaliner Videos</div>
+          <div className="hero-eyebrow">Automated Explainer Videos</div>
 
           <h1 className="hero-title">
             Transform any GitHub repository into an <em>automated video summary.</em>

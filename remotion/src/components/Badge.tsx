@@ -1,5 +1,5 @@
 /**
- * RepoReel — Badge/Pill Component
+ * AutoMotion — Badge/Pill Component
  */
 import React from "react";
 import { spring, useCurrentFrame, useVideoConfig } from "remotion";

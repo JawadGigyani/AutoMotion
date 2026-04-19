@@ -1,5 +1,5 @@
 /**
- * RepoReel — Tech Stack Scene
+ * AutoMotion — Tech Stack Scene
  * Technology badges flowing in with staggered timing.
  */
 import React from "react";

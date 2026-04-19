@@ -1,5 +1,5 @@
 /**
- * RepoReel — Stats Scene
+ * AutoMotion — Stats Scene
  * Animated counters for stars, forks, language breakdown.
  */
 import React from "react";

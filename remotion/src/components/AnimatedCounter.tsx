@@ -1,5 +1,5 @@
 /**
- * RepoReel — Animated Counter Component
+ * AutoMotion — Animated Counter Component
  * Counts from 0 to target number over a set duration.
  */
 import React from "react";
