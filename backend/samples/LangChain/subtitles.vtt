@@ -1,0 +1,37 @@
+WEBVTT
+
+1
+00:00:00.000 --> 00:00:05.493
+Introducing LangChain: The agent engineering platform for building AI-powered applications.
+
+2
+00:00:05.493 --> 00:00:15.295
+LangChain simplifies the development of AI applications by providing tools and abstractions for chaining together interoperable components and third-party integrations.
+
+3
+00:00:15.295 --> 00:00:24.969
+LangChain supports real-time data augmentation, model interoperability, rapid prototyping, and production-ready features like monitoring and debugging.
+
+4
+00:00:24.969 --> 00:00:30.139
+To get started, simply install LangChain using pip or uv add. It’s that easy.
+
+5
+00:00:30.139 --> 00:00:38.937
+Here’s a code snippet from `chat_models.py` showing how to initialize and interact with chat models, ensuring model interoperability.
+
+6
+00:00:38.937 --> 00:00:47.056
+LangChain also includes a `.devcontainer` configuration for consistent development environments, making it easier for new contributors to get started.
+
+7
+00:00:47.056 --> 00:00:54.488
+LangChain is built with Python and leverages popular frameworks and tools to provide a robust and flexible development experience.
+
+8
+00:00:54.488 --> 00:01:04.690
+With 134,077 stars and 22,156 forks, LangChain is a widely adopted and trusted platform for building AI applications.
+
+9
+00:01:04.690 --> 00:01:16.835
+Visit github.com/langchain-ai/langchain to start building your next AI application today. With LangChain, you’re just one pip install away from creating powerful AI agents.

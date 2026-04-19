@@ -2,15 +2,20 @@
 AutoMotion — FastAPI Application
 Main entry point for the backend server.
 """
-from contextlib import asynccontextmanager
 
+from contextlib import asynccontextmanager
+from pathlib import Path
+
+from api.routes import router, start_cleanup_loop
+from api.websocket import ws_router
+from config import BACKEND_URL, OUTPUTS_DIR
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from config import OUTPUTS_DIR, BACKEND_URL
-from api.routes import router, start_cleanup_loop
-from api.websocket import ws_router
+# Permanent samples directory — never purged by cleanup jobs
+SAMPLES_DIR = Path(__file__).parent / "samples"
+SAMPLES_DIR.mkdir(parents=True, exist_ok=True)
 
 
 # ── App lifespan ──
@@ -43,6 +48,9 @@ app.add_middleware(
 # ── Static files: serve generated videos ──
 OUTPUTS_DIR.mkdir(parents=True, exist_ok=True)
 app.mount("/outputs", StaticFiles(directory=str(OUTPUTS_DIR)), name="outputs")
+
+# ── Static files: serve permanent sample videos ──
+app.mount("/samples", StaticFiles(directory=str(SAMPLES_DIR)), name="samples")
 
 # ── Register routes ──
 app.include_router(router, prefix="/api")

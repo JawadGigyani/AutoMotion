@@ -1,7 +1,6 @@
-# Use an official multi-architecture image providing both Python and Node.js
+# Python 3.10 + Node.js 18 base image
 FROM nikolaik/python-nodejs:python3.10-nodejs18-bullseye
 
-# Set environment variables to prevent Python from writing .pyc files
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
@@ -12,8 +11,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libnss3 \
     libdbus-1-3 \
     libatk1.0-0 \
+    libatk-bridge2.0-0 \
     libxss1 \
     libasound2 \
+    libgbm-dev \
+    libgtk-3-0 \
     fonts-liberation \
     libappindicator3-1 \
     xdg-utils \
@@ -34,13 +36,13 @@ RUN cd remotion && npm ci
 COPY backend/requirements.txt ./backend/
 RUN pip install --no-cache-dir -r backend/requirements.txt
 
-# ── Copy everything ──
+# ── Copy application code ──
 COPY . .
 
-# Ensure the startup script is executable
-RUN chmod +x /app/startup.sh
+# Ensure startup script is executable and outputs dir exists
+RUN chmod +x /app/startup.sh && mkdir -p /app/backend/outputs
 
-# DigitalOcean app platform routes to $PORT
+# DigitalOcean App Platform routes to $PORT
 ENV PORT=8080
 EXPOSE 8080
 

@@ -426,7 +426,7 @@ async def render_video(state: PipelineState) -> dict[str, Any]:
         scenes = state.get("script", {}).get("scenes", [])
         scene_durations = state.get("scene_audio_durations", [])
         if scenes and scene_durations:
-            srt_path = str((job_dir / "subtitles.srt").resolve())
+            srt_path = str((job_dir / "subtitles.vtt").resolve())
             subtitle_path = generate_srt(scenes, scene_durations, srt_path)
     except Exception as e:
         print(f"  [SRT] Warning: subtitle generation failed: {e}")
@@ -524,6 +524,7 @@ async def run_pipeline(
     progress_callback: Optional[Callable] = None,
     theme_id: Optional[str] = None,
     voice_id: Optional[str] = None,
+    voice_style: Optional[str] = None,
 ) -> dict[str, Any]:
     """
     Run the full video generation pipeline.
@@ -534,6 +535,7 @@ async def run_pipeline(
         progress_callback: Optional async callback for progress updates
         theme_id: Optional theme override (e.g. "dark_cinematic", "neon_cyberpunk")
         voice_id: Optional ElevenLabs voice override
+        voice_style: Optional narration style hint (e.g. "enthusiastic", "storytelling")
 
     Returns:
         Final pipeline state dict
@@ -541,7 +543,6 @@ async def run_pipeline(
     Raises:
         Exception: If the pipeline fails at any stage
     """
-    # Register progress callback
     if progress_callback:
         register_progress_callback(job_id, progress_callback)
 
@@ -559,6 +560,8 @@ async def run_pipeline(
             initial_state["theme_id"] = theme_id
         if voice_id and voice_id != "auto":
             initial_state["voice_id"] = voice_id
+        if voice_style:
+            initial_state["voice_style"] = voice_style
 
         print("=" * 60)
         print(f"AutoMotion Pipeline — Job {job_id[:8]}...")
@@ -567,6 +570,8 @@ async def run_pipeline(
             print(f"Theme override: {theme_id}")
         if voice_id and voice_id != "auto":
             print(f"Voice override: {voice_id}")
+        if voice_style:
+            print(f"Voice style: {voice_style}")
         print("=" * 60 + "\n")
 
         # Run the pipeline

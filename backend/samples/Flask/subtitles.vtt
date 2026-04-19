@@ -1,0 +1,37 @@
+WEBVTT
+
+1
+00:00:00.000 --> 00:00:05.877
+Welcome to Flask, the Python micro framework that makes building web apps both simple and scalable.
+
+2
+00:00:05.877 --> 00:00:12.367
+Flask is designed to get you up and running quickly, while still being flexible enough to handle complex applications.
+
+3
+00:00:12.367 --> 00:00:21.067
+Let's dive into the tech stack. Flask relies on Jinja for templating, Werkzeug for WSGI utilities, and Click for command-line interfaces.
+
+4
+00:00:21.067 --> 00:00:26.051
+First, let's see how easy it is to set up Flask. Just one pip install and you're ready to go.
+
+5
+00:00:26.051 --> 00:00:33.046
+Here's a quick start example from the documentation. In just a few lines, you can create a basic route and run your Flask app.
+
+6
+00:00:33.046 --> 00:00:39.297
+Flask supports asynchronous programming with ASGI, making it a great choice for modern web applications.
+
+7
+00:00:39.297 --> 00:00:46.138
+Flask comes with a built-in development server and debugger, making it easy to test and iterate on your application.
+
+8
+00:00:46.138 --> 00:00:53.620
+With 71,424 stars and 16,791 forks, Flask is a trusted choice for developers worldwide.
+
+9
+00:00:53.620 --> 00:00:59.222
+Ready to build your next web application? Visit the Flask repository and start creating today.

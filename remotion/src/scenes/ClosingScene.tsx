@@ -1,6 +1,6 @@
 /**
  * AutoMotion — Closing Scene
- * Wrap up with repo URL and tech summary.
+ * Wrap up with repo URL and tech summary. Adapts to theme layout.
  */
 import React from "react";
 import {
@@ -13,6 +13,12 @@ import {
 import { useTheme } from "../themes/ThemeProvider";
 import { NoiseBackground } from "../components/NoiseBackground";
 
+const CARD_RADIUS: Record<string, number> = {
+  rounded: 14,
+  sharp: 3,
+  pill: 30,
+};
+
 export const ClosingScene: React.FC<{
   content: { repo_url?: string; built_with?: string };
   background_variant?: string;
@@ -20,8 +26,13 @@ export const ClosingScene: React.FC<{
   const frame = useCurrentFrame();
   const { fps, durationInFrames } = useVideoConfig();
   const theme = useTheme();
+  const { layout } = theme;
 
-  const mainProgress = spring({ frame, fps, config: { damping: 14, stiffness: 70 } });
+  const mainProgress = spring({
+    frame,
+    fps,
+    config: { damping: 14, stiffness: 70 },
+  });
   const urlProgress = spring({
     frame: Math.max(0, frame - 12),
     fps,
@@ -33,12 +44,15 @@ export const ClosingScene: React.FC<{
     config: { damping: 18, stiffness: 60 },
   });
 
-  // Fade out
   const exitStart = Math.max(0, durationInFrames - 15);
-  const exitOpacity = interpolate(frame, [exitStart, durationInFrames], [1, 0], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
+  const exitOpacity = interpolate(
+    frame,
+    [exitStart, durationInFrames],
+    [1, 0],
+    { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+  );
+
+  const radius = CARD_RADIUS[layout.cardStyle] ?? 14;
 
   return (
     <AbsoluteFill>
@@ -46,12 +60,11 @@ export const ClosingScene: React.FC<{
       <AbsoluteFill
         style={{
           justifyContent: "center",
-          alignItems: "center",
-          padding: 80,
+          alignItems: layout.titleAlign === "left" ? "flex-start" : "center",
+          padding: layout.titleAlign === "left" ? "80px 120px" : 80,
           opacity: exitOpacity,
         }}
       >
-        {/* GitHub URL */}
         <div
           style={{
             fontSize: 38,
@@ -59,8 +72,8 @@ export const ClosingScene: React.FC<{
             fontFamily: theme.fonts.code,
             color: theme.colors.accent,
             padding: "18px 40px",
-            borderRadius: 14,
-            border: `2px solid ${theme.colors.accent}50`,
+            borderRadius: radius,
+            border: `${layout.cardBorderWidth}px solid ${theme.colors.accent}50`,
             backgroundColor: `${theme.colors.cardBg}cc`,
             opacity: mainProgress,
             transform: `scale(${0.85 + mainProgress * 0.15})`,
@@ -69,7 +82,6 @@ export const ClosingScene: React.FC<{
           {content.repo_url || "github.com"}
         </div>
 
-        {/* Built with */}
         {content.built_with && (
           <div
             style={{
@@ -85,7 +97,6 @@ export const ClosingScene: React.FC<{
           </div>
         )}
 
-        {/* AutoMotion watermark */}
         <div
           style={{
             position: "absolute",

@@ -7,7 +7,6 @@ System and user prompts for the two AI agents:
 
 # ═══════════════════════════════════════════════════════════════
 # AGENT #1 — REPO ANALYST
-# Uses Qwen2.5-Coder-32B-Instruct (code-specialized)
 # ═══════════════════════════════════════════════════════════════
 
 REPO_ANALYST_SYSTEM = """You are a senior software engineer conducting a technical code review.
@@ -17,6 +16,7 @@ RULES:
 - Analyze ONLY based on the provided data. Do NOT hallucinate features, technologies, or patterns not present in the code.
 - Identify the REAL tech stack from actual source code and config files, not just README claims.
 - Be specific and evidence-based. If you mention a technology, you must have seen it in the files.
+- If the README contains setup/installation instructions, extract them verbatim into the setup_commands field.
 - Output ONLY valid JSON. No markdown wrapping, no explanatory text before or after the JSON."""
 
 REPO_ANALYST_USER = """Analyze this GitHub repository and produce a structured JSON analysis.
@@ -64,7 +64,8 @@ Produce EXACTLY this JSON structure:
       "why_interesting": "Why this is notable or clever"
     }}
   ],
-  "category_hint": "One of: frontend, backend, devops, datascience, general"
+  "category_hint": "One of: frontend, backend, devops, datascience, general",
+  "setup_commands": "The exact setup/installation commands from the README (pip install, npm install, docker run, etc.), or empty string if none found"
 }}
 
 Output ONLY the JSON object. No other text."""
@@ -72,17 +73,16 @@ Output ONLY the JSON object. No other text."""
 
 # ═══════════════════════════════════════════════════════════════
 # AGENT #2 — SCRIPT WRITER + SCENE DIRECTOR (MERGED)
-# Uses Qwen2.5-72B-Instruct (general purpose, better prose)
 # ═══════════════════════════════════════════════════════════════
 
 SCRIPT_DIRECTOR_SYSTEM = """You are a senior tech content creator who makes short-form video essays about open source software.
-Your job is to write a narration script AND specify visual scenes for a 60–90 second explainer video about a GitHub repository.
-
+Your job is to write a narration script AND specify visual scenes for a 90–120 second explainer video about a GitHub repository.
+{voice_style_instruction}
 CORE RULES:
 - Write as if explaining to a smart developer who has never heard of this project.
 - Be specific and technical — name the actual technologies, show real code, cite real numbers.
 - NEVER invent features, statistics, or code that is not present in the provided analysis.
-- Each scene narration: 20–40 words. Total narration: 180–280 words across all scenes.
+- Each scene narration: 20–45 words. Total narration: 250–380 words across all scenes.
 - Output ONLY valid JSON. No markdown, no text outside the JSON object.
 
 STORYTELLING RULES:
@@ -137,6 +137,9 @@ Tech Stack: {tech_stack}
 ## Available Key Files
 {key_file_names}
 
+## Setup Instructions (from README)
+{setup_commands}
+
 ───────────────────────────────────────────────────────────────
 ## SCENE TYPE REFERENCE — choose the best mix for this specific repo
 
@@ -166,6 +169,19 @@ Tech Stack: {tech_stack}
     "caption": "Plain-English explanation of what this code does and why it matters"
   }}
   For terminal commands use filename "Terminal" and show the exact commands.
+
+"setup"
+  HOW TO GET STARTED. Show the actual installation/setup commands from the README.
+  Only include this scene if the project has real setup instructions.
+  content: {{
+    "steps": [
+      {{"command": "pip install fastapi", "label": "Install"}},
+      {{"command": "uvicorn main:app --reload", "label": "Run"}},
+      ...
+    ],
+    "title": "Getting Started"
+  }}
+  Use 2–4 steps. Show only the essential commands to get running.
 
 "features"
   Key capabilities, design principles, or architectural decisions that cannot
@@ -199,8 +215,8 @@ Tech Stack: {tech_stack}
   "theme_hint": "frontend | backend | devops | datascience | general",
   "scenes": [
     {{
-      "narration": "20–40 word spoken narration for this scene",
-      "visual_type": "title | overview | tech_stack | code_highlight | features | stats | closing",
+      "narration": "20–45 word spoken narration for this scene",
+      "visual_type": "title | overview | tech_stack | code_highlight | features | setup | stats | closing",
       "content": {{ ...content schema for the chosen visual_type... }},
       "animation": "fade_in | slide_left | slide_up | typewriter | code_reveal | zoom_in | count_up | fade_out",
       "background_variant": "gradient | noise | grid | dots | radial | solid"
@@ -216,13 +232,14 @@ FIXED positions:
   Scene N-1: stats   — always second-to-last
   Scene N:  closing  — always last
 
-MIDDLE SCENES (positions 3 through N-2, choose 3–5):
+MIDDLE SCENES (positions 3 through N-2, choose 4–6):
   Pick the combination that best tells the story of THIS specific repository.
   Ask yourself: "What would make a developer immediately open this repo?"
   Lead with that answer.
 
   Strong choices (pick what fits):
   - tech_stack          — use once, be specific about WHY each tech was chosen
+  - setup              — include if the project has clear setup/installation steps
   - code_highlight      — INSTALLATION or one-line quickstart (highest priority for libraries)
   - code_highlight      — the core algorithm, key API, or most elegant pattern in the codebase
   - code_highlight      — a CLI command, config snippet, or second interesting pattern
@@ -233,9 +250,50 @@ MIDDLE SCENES (positions 3 through N-2, choose 3–5):
   - Repeating information already shown in another scene
   - Using features when a code_highlight would be more compelling
 
-SCENE COUNT: 7–9 total. More code_highlights = more interesting video.
+SCENE COUNT: 8–10 total. More code_highlights = more interesting video.
 
 Output ONLY the JSON object. No other text."""
+
+
+# ═══════════════════════════════════════════════════════════════
+# VOICE STYLE INSTRUCTIONS
+# Injected into SCRIPT_DIRECTOR_SYSTEM based on the user's voice choice
+# ═══════════════════════════════════════════════════════════════
+
+VOICE_STYLE_INSTRUCTIONS = {
+    "casual": (
+        "\nVOICE & TONE: Write in a casual, conversational tone. "
+        "Use contractions, short sentences, and a relaxed cadence. "
+        "Imagine you're explaining this project to a friend over coffee.\n"
+    ),
+    "professional": (
+        "\nVOICE & TONE: Write in a polished, professional tone. "
+        "Use precise language, measured pacing, and authoritative statements. "
+        "Imagine you're presenting at a tech conference keynote.\n"
+    ),
+    "energetic": (
+        "\nVOICE & TONE: Write with high energy and excitement. "
+        "Use punchy sentences, dynamic verbs, and build momentum throughout. "
+        "Imagine you're a tech YouTuber hyped about a new discovery.\n"
+    ),
+    "storytelling": (
+        "\nVOICE & TONE: Write as a narrator telling a compelling story. "
+        "Build suspense, use dramatic pauses (short sentences between long ones), "
+        "and create a sense of journey and discovery.\n"
+    ),
+    "enthusiastic": (
+        "\nVOICE & TONE: Write with genuine enthusiasm and wonder. "
+        "Highlight what's impressive, use superlatives where earned, "
+        "and convey authentic excitement about the technology.\n"
+    ),
+}
+
+
+def get_voice_style_instruction(voice_style: str | None) -> str:
+    """Return the voice style instruction text for the prompt, or empty string."""
+    if not voice_style:
+        return ""
+    return VOICE_STYLE_INSTRUCTIONS.get(voice_style, "")
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -261,6 +319,7 @@ def get_fallback_analysis(
         "target_audience": "Developers",
         "code_highlights": [],
         "category_hint": "general",
+        "setup_commands": "",
     }
 
 

@@ -8,7 +8,12 @@ import json
 from typing import Any
 
 from agents.state import PipelineState
-from agents.prompts import SCRIPT_DIRECTOR_SYSTEM, SCRIPT_DIRECTOR_USER, get_fallback_script
+from agents.prompts import (
+    SCRIPT_DIRECTOR_SYSTEM,
+    SCRIPT_DIRECTOR_USER,
+    get_fallback_script,
+    get_voice_style_instruction,
+)
 from services.llm_service import call_llm_with_retry
 from services.theme_service import select_theme
 
@@ -51,7 +56,7 @@ def _validate_scenes(script: dict) -> dict:
     Validate and sanitize the script output.
     Ensures all required fields exist with sensible defaults.
     """
-    valid_visual_types = {"title", "overview", "tech_stack", "code_highlight", "features", "stats", "closing"}
+    valid_visual_types = {"title", "overview", "tech_stack", "code_highlight", "features", "setup", "stats", "closing"}
     valid_animations = {"fade_in", "slide_left", "slide_up", "typewriter", "code_reveal", "zoom_in", "count_up", "fade_out"}
     valid_backgrounds = {"gradient", "noise", "grid", "dots", "radial", "solid"}
 
@@ -104,8 +109,16 @@ async def write_script_and_scenes(state: PipelineState) -> dict[str, Any]:
     repo = state["repo"]
     analysis = state.get("analysis", {})
 
-    # Build the prompt
     tech_stack = analysis.get("tech_stack", [])
+    setup_commands = analysis.get("setup_commands", "")
+
+    # Inject voice style into the system prompt
+    voice_style = state.get("voice_style", None)
+    voice_instruction = get_voice_style_instruction(voice_style)
+    system_prompt = SCRIPT_DIRECTOR_SYSTEM.format(
+        voice_style_instruction=voice_instruction
+    )
+
     user_prompt = SCRIPT_DIRECTOR_USER.format(
         owner=owner,
         repo=repo,
@@ -119,9 +132,10 @@ async def write_script_and_scenes(state: PipelineState) -> dict[str, Any]:
         tech_stack=", ".join(tech_stack[:8]) if tech_stack else "Unknown",
         code_highlights=_format_code_highlights(analysis),
         key_file_names=", ".join(list(state.get("key_files", {}).keys())[:10]) or "None",
+        setup_commands=setup_commands if setup_commands else "(no setup instructions found in README)",
     )
 
-    full_prompt = f"{SCRIPT_DIRECTOR_SYSTEM}\n\n{user_prompt}"
+    full_prompt = f"{system_prompt}\n\n{user_prompt}"
 
     try:
         script = await call_llm_with_retry(

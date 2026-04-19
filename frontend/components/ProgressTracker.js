@@ -49,37 +49,34 @@ function formatDuration(ms) {
 }
 
 export default function ProgressTracker({ jobId, onComplete, onError }) {
-  const [currentStep, setCurrentStep] = useState("");
-  const [progress, setProgress] = useState(0);
-  const [message, setMessage] = useState("Connecting to server...");
+  const [currentStep, setCurrentStep] = useState("parse_url");
+  const [progress, setProgress] = useState(2);
+  const [message, setMessage] = useState("Parsing repository URL...");
   const [wsStatus, setWsStatus] = useState("connecting");
   const [elapsed, setElapsed] = useState(0);
 
   const startTimeRef = useRef(Date.now());
-
   const onCompleteRef = useRef(onComplete);
   const onErrorRef = useRef(onError);
+
   useEffect(() => {
     onCompleteRef.current = onComplete;
   }, [onComplete]);
+
   useEffect(() => {
     onErrorRef.current = onError;
   }, [onError]);
 
-  // Elapsed timer — ticks every second
+  // Elapsed timer — ticks every second, stops when done/errored
   useEffect(() => {
+    if (wsStatus === "done" || wsStatus === "error") return;
     const timer = setInterval(() => {
       setElapsed(Date.now() - startTimeRef.current);
     }, 1000);
     return () => clearInterval(timer);
-  }, []);
+  }, [wsStatus]);
 
-  // Compute ETA (only meaningful after 15% progress)
-  const eta =
-    progress >= 15
-      ? Math.max(0, elapsed / (progress / 100) - elapsed)
-      : null;
-
+  // WebSocket + polling fallback
   useEffect(() => {
     if (!jobId) return;
 
@@ -229,15 +226,6 @@ export default function ProgressTracker({ jobId, onComplete, onError }) {
         />
       </div>
 
-      {/* ETA display */}
-      {wsStatus !== "done" && wsStatus !== "error" && (
-        <div className="tracker-eta">
-          {eta !== null
-            ? `~${formatDuration(eta)} remaining`
-            : "Estimating time..."}
-        </div>
-      )}
-
       {/* Step list */}
       <div className="tracker-steps">
         {STEPS.map((step, i) => {
@@ -276,7 +264,7 @@ export default function ProgressTracker({ jobId, onComplete, onError }) {
         })}
       </div>
 
-      {/* Footer */}
+      {/* Footer — elapsed time only, no ETA */}
       <div className="tracker-footer">
         <span className="tracker-status-text">
           {wsStatus === "polling"
@@ -290,9 +278,7 @@ export default function ProgressTracker({ jobId, onComplete, onError }) {
           {elapsed > 0 && wsStatus !== "done"
             ? `Elapsed: ${formatDuration(elapsed)}`
             : ""}
-          {wsStatus === "done"
-            ? `Completed in ${formatDuration(elapsed)}`
-            : ""}
+          {wsStatus === "done" ? `Completed in ${formatDuration(elapsed)}` : ""}
         </span>
         <span className="tracker-pct">{statusText()}</span>
       </div>

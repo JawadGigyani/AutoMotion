@@ -8,7 +8,11 @@
 import express from "express";
 import cors from "cors";
 import { bundle } from "@remotion/bundler";
-import { renderMedia, renderStill, selectComposition } from "@remotion/renderer";
+import {
+  renderMedia,
+  renderStill,
+  selectComposition,
+} from "@remotion/renderer";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -16,6 +20,11 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Use system-installed Chromium if available (set by Dockerfile)
 const chromiumPath = process.env.PUPPETEER_EXECUTABLE_PATH || null;
+
+// Chromium options for Docker: enable multi-process rendering and set GL renderer
+const chromiumOptions = chromiumPath
+  ? { enableMultiProcessOnLinux: true, gl: "angle", disableWebSecurity: true }
+  : {};
 
 const app = express();
 
@@ -26,7 +35,7 @@ app.use(express.json({ limit: "10mb" }));
 // so Chromium (used by Remotion renderer) can fetch them
 app.use(
   "/static",
-  express.static(path.resolve(__dirname, "..", "backend", "outputs"))
+  express.static(path.resolve(__dirname, "..", "backend", "outputs")),
 );
 
 // ── Bundle management ──
@@ -57,8 +66,14 @@ app.post("/render", async (req, res) => {
   console.log("\n🎬 Render request received");
 
   try {
-    const { scenes, audioUrl, totalFrames, fps = 30, theme, outputPath } =
-      req.body;
+    const {
+      scenes,
+      audioUrl,
+      totalFrames,
+      fps = 30,
+      theme,
+      outputPath,
+    } = req.body;
 
     if (!scenes || !totalFrames || !outputPath) {
       return res.status(400).json({
@@ -67,10 +82,10 @@ app.post("/render", async (req, res) => {
     }
 
     console.log(
-      `   Scenes: ${scenes.length}, Frames: ${totalFrames}, FPS: ${fps}`
+      `   Scenes: ${scenes.length}, Frames: ${totalFrames}, FPS: ${fps}`,
     );
     console.log(
-      `   Theme: ${theme?.name || "default"}, Audio: ${audioUrl ? "yes" : "no"}`
+      `   Theme: ${theme?.name || "default"}, Audio: ${audioUrl ? "yes" : "no"}`,
     );
 
     const serveUrl = await ensureBundle();
@@ -90,13 +105,14 @@ app.post("/render", async (req, res) => {
       id: "RepoReel",
       inputProps,
       port: 3100,
+      chromiumOptions,
     };
     if (chromiumPath) compositionOpts.chromiumExecutable = chromiumPath;
 
     const composition = await selectComposition(compositionOpts);
 
     console.log(
-      `   Composition: ${composition.durationInFrames} frames @ ${composition.fps}fps`
+      `   Composition: ${composition.durationInFrames} frames @ ${composition.fps}fps`,
     );
 
     // Render the video
@@ -106,11 +122,12 @@ app.post("/render", async (req, res) => {
       codec: "h264",
       outputLocation: outputPath,
       inputProps,
-      concurrency: 2,
+      concurrency: "50%",
       port: 3100,
+      chromiumOptions,
       onProgress: ({ progress }) => {
         const pct = Math.round(progress * 100);
-        if (pct % 20 === 0) {
+        if (pct % 10 === 0) {
           console.log(`   Render progress: ${pct}%`);
         }
       },
@@ -146,7 +163,9 @@ app.post("/thumbnail", async (req, res) => {
 
     // Build input props with a single title scene, 90 frames (3s)
     const inputProps = {
-      scenes: scenes.slice(0, 1).map((s) => ({ ...s, durationInFrames: 90, startFrame: 0 })),
+      scenes: scenes
+        .slice(0, 1)
+        .map((s) => ({ ...s, durationInFrames: 90, startFrame: 0 })),
       audioUrl: "",
       totalFrames: 90,
       fps: 30,
@@ -158,6 +177,7 @@ app.post("/thumbnail", async (req, res) => {
       id: "RepoReel",
       inputProps,
       port: 3101,
+      chromiumOptions,
     };
     if (chromiumPath) compositionOpts.chromiumExecutable = chromiumPath;
 
@@ -168,8 +188,9 @@ app.post("/thumbnail", async (req, res) => {
       serveUrl,
       output: outputPath,
       inputProps,
-      frame: 15, // 0.5s in — animations are visible
+      frame: 15,
       port: 3101,
+      chromiumOptions,
     };
     if (chromiumPath) stillOpts.chromiumExecutable = chromiumPath;
 

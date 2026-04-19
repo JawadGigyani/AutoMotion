@@ -27,14 +27,32 @@ export const StatsScene: React.FC<{
   const frame = useCurrentFrame();
   const { fps, durationInFrames } = useVideoConfig();
   const theme = useTheme();
+  const { layout } = theme;
 
-  const titleProgress = spring({ frame, fps, config: { damping: 15, stiffness: 80 } });
+  const titleProgress = spring({
+    frame,
+    fps,
+    config: { damping: 15, stiffness: 80 },
+  });
 
   const exitStart = Math.max(0, durationInFrames - 10);
-  const exitOpacity = interpolate(frame, [exitStart, durationInFrames], [1, 0], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
+  const exitOpacity = interpolate(
+    frame,
+    [exitStart, durationInFrames],
+    [1, 0],
+    { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+  );
+
+  const labelStyle: React.CSSProperties = {
+    fontSize: 28,
+    fontWeight: 600,
+    fontFamily: theme.fonts.body,
+    color: theme.colors.accent,
+    letterSpacing: layout.sectionLabelStyle === "uppercase" ? "4px" : "1px",
+    textTransform: layout.sectionLabelStyle === "none" ? undefined : layout.sectionLabelStyle,
+    marginBottom: 50,
+    opacity: titleProgress,
+  };
 
   return (
     <AbsoluteFill>
@@ -47,23 +65,10 @@ export const StatsScene: React.FC<{
           opacity: exitOpacity,
         }}
       >
-        {/* Section title */}
-        <div
-          style={{
-            fontSize: 28,
-            fontWeight: 600,
-            fontFamily: theme.fonts.body,
-            color: theme.colors.accent,
-            textTransform: "uppercase",
-            letterSpacing: "4px",
-            marginBottom: 50,
-            opacity: titleProgress,
-          }}
-        >
-          Community
+        <div style={labelStyle}>
+          {layout.sectionLabelStyle === "none" ? "> community" : "Community"}
         </div>
 
-        {/* Stat counters row */}
         <div
           style={{
             display: "flex",
@@ -76,7 +81,6 @@ export const StatsScene: React.FC<{
             <AnimatedCounter
               value={content.stars}
               label="Stars"
-              suffix=""
               delay={5}
             />
           )}
@@ -84,7 +88,6 @@ export const StatsScene: React.FC<{
             <AnimatedCounter
               value={content.forks}
               label="Forks"
-              suffix=""
               delay={12}
             />
           )}
@@ -92,13 +95,11 @@ export const StatsScene: React.FC<{
             <AnimatedCounter
               value={content.contributors}
               label="Contributors"
-              suffix=""
               delay={19}
             />
           )}
         </div>
 
-        {/* Primary language badge */}
         {content.language && (
           <div
             style={{
@@ -116,7 +117,7 @@ export const StatsScene: React.FC<{
               style={{
                 width: 14,
                 height: 14,
-                borderRadius: 7,
+                borderRadius: layout.cardStyle === "sharp" ? 2 : 7,
                 backgroundColor: theme.colors.accent,
               }}
             />

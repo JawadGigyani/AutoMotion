@@ -4,10 +4,7 @@
  */
 import React from "react";
 import { AbsoluteFill, Audio } from "remotion";
-import {
-  TransitionSeries,
-  linearTiming,
-} from "@remotion/transitions";
+import { TransitionSeries, linearTiming } from "@remotion/transitions";
 import { fade } from "@remotion/transitions/fade";
 import { loadFont as loadInter } from "@remotion/google-fonts/Inter";
 import { loadFont as loadJetBrains } from "@remotion/google-fonts/JetBrainsMono";
@@ -22,8 +19,8 @@ import { CodeHighlightScene } from "./scenes/CodeHighlightScene";
 import { FeaturesScene } from "./scenes/FeaturesScene";
 import { StatsScene } from "./scenes/StatsScene";
 import { ClosingScene } from "./scenes/ClosingScene";
+import { SetupScene } from "./scenes/SetupScene";
 
-// Load fonts
 loadInter();
 loadJetBrains();
 
@@ -34,6 +31,7 @@ const SCENE_COMPONENTS: Record<string, React.FC<any>> = {
   tech_stack: TechStackScene,
   code_highlight: CodeHighlightScene,
   features: FeaturesScene,
+  setup: SetupScene,
   stats: StatsScene,
   closing: ClosingScene,
 };
@@ -66,11 +64,11 @@ export const RepoReelVideo: React.FC<RepoReelVideoProps> = ({
   audioUrl,
   theme: themeProp,
 }) => {
-  // Resolve theme
-  const theme: Theme =
-    "colors" in themeProp
-      ? (themeProp as Theme)
-      : getTheme((themeProp as { id: string }).id);
+  // Always resolve via getTheme() so the full Theme (including layout) is used,
+  // even when the backend sends a partial theme object without layout.
+  const theme: Theme = getTheme(
+    "id" in themeProp ? themeProp.id : "dark_cinematic"
+  );
 
   const transitionDuration = 12; // frames (0.4s at 30fps)
 

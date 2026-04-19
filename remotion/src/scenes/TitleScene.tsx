@@ -1,6 +1,6 @@
 /**
  * AutoMotion — Title Scene
- * Project name with tagline, animated accent line.
+ * Project name with tagline. Layout adapts per theme (centered vs left-aligned).
  */
 import React from "react";
 import {
@@ -20,8 +20,13 @@ export const TitleScene: React.FC<{
   const frame = useCurrentFrame();
   const { fps, durationInFrames } = useVideoConfig();
   const theme = useTheme();
+  const { layout } = theme;
 
-  const titleProgress = spring({ frame, fps, config: { damping: 14, stiffness: 80 } });
+  const titleProgress = spring({
+    frame,
+    fps,
+    config: { damping: 14, stiffness: 80 },
+  });
   const taglineProgress = spring({
     frame: Math.max(0, frame - 12),
     fps,
@@ -29,12 +34,15 @@ export const TitleScene: React.FC<{
   });
   const lineWidth = interpolate(titleProgress, [0, 1], [0, 120]);
 
-  // Exit fade
   const exitStart = Math.max(0, durationInFrames - 10);
-  const exitOpacity = interpolate(frame, [exitStart, durationInFrames], [1, 0], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
+  const exitOpacity = interpolate(
+    frame,
+    [exitStart, durationInFrames],
+    [1, 0],
+    { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+  );
+
+  const isLeft = layout.titleAlign === "left";
 
   return (
     <AbsoluteFill>
@@ -42,52 +50,55 @@ export const TitleScene: React.FC<{
       <AbsoluteFill
         style={{
           justifyContent: "center",
-          alignItems: "center",
-          padding: 80,
+          alignItems: isLeft ? "flex-start" : "center",
+          padding: isLeft ? "80px 120px" : 80,
           opacity: exitOpacity,
         }}
       >
-        {/* Title */}
         <div
           style={{
-            fontSize: 82,
+            fontSize: layout.titleSize,
             fontWeight: 800,
             fontFamily: theme.fonts.heading,
             color: theme.colors.text,
-            textAlign: "center",
+            textAlign: isLeft ? "left" : "center",
             letterSpacing: "-2px",
             opacity: titleProgress,
-            transform: `translateY(${(1 - titleProgress) * 50}px) scale(${0.85 + titleProgress * 0.15})`,
+            transform: isLeft
+              ? `translateX(${(1 - titleProgress) * -60}px)`
+              : `translateY(${(1 - titleProgress) * 50}px) scale(${0.85 + titleProgress * 0.15})`,
             lineHeight: 1.1,
-            maxWidth: "90%",
+            maxWidth: layout.contentMaxWidth,
           }}
         >
           {content.title || "Project"}
         </div>
 
-        {/* Accent line */}
         <div
           style={{
             width: lineWidth,
-            height: 4,
-            background: `linear-gradient(90deg, transparent, ${theme.colors.accent}, transparent)`,
+            height: layout.accentBarHeight,
+            background: isLeft
+              ? theme.colors.accent
+              : `linear-gradient(90deg, transparent, ${theme.colors.accent}, transparent)`,
             marginTop: 30,
-            borderRadius: 2,
+            borderRadius: layout.accentBarHeight / 2,
           }}
         />
 
-        {/* Tagline */}
         <div
           style={{
             fontSize: 34,
             fontWeight: 400,
             fontFamily: theme.fonts.body,
             color: theme.colors.textMuted,
-            textAlign: "center",
+            textAlign: isLeft ? "left" : "center",
             marginTop: 25,
             opacity: taglineProgress,
-            transform: `translateY(${(1 - taglineProgress) * 30}px)`,
-            maxWidth: "80%",
+            transform: isLeft
+              ? `translateX(${(1 - taglineProgress) * -40}px)`
+              : `translateY(${(1 - taglineProgress) * 30}px)`,
+            maxWidth: layout.contentMaxWidth,
             lineHeight: 1.4,
           }}
         >

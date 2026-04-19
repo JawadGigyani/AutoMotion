@@ -1,9 +1,9 @@
 import RepoInput from "@/components/RepoInput";
+import SampleVideos from "@/components/SampleVideos";
 
 export default function Home() {
   return (
     <main>
-      {/* ── Nav ── */}
       <nav className="nav">
         <div className="container nav-inner">
           <div
@@ -12,18 +12,10 @@ export default function Home() {
           >
             AutoMotion
           </div>
-          <a
-            href="/gallery"
-            className="nav-link animate-enter"
-            style={{ animationDelay: "50ms" }}
-          >
-            Gallery →
-          </a>
         </div>
       </nav>
 
       <div className="container">
-        {/* ── Hero ── */}
         <section
           className="hero animate-enter"
           style={{ animationDelay: "100ms" }}
@@ -31,27 +23,36 @@ export default function Home() {
           <div className="hero-eyebrow">Automated Explainer Videos</div>
 
           <h1 className="hero-title">
-            Transform any GitHub repository into an{" "}
-            <em>automated video summary.</em>
+            Turn any GitHub repo into a{" "}
+            <em>narrated video.</em>
           </h1>
 
           <p className="hero-subtitle">
-            Provide a public GitHub URL. AutoMotion's logic-processing engine
-            automatically digests the codebase, generates a structured technical
-            script, synchronizes a voiceover, and renders a short 1080p video
-            summary.
+            Paste a URL. Get a 1080p explainer video with AI narration
+            in minutes.
           </p>
 
           <RepoInput />
         </section>
 
-        {/* ── How It Works ── */}
         <section
           className="section animate-enter"
           style={{ animationDelay: "200ms" }}
         >
           <div className="section-header">
-            <span className="section-label">Pipeline Overview</span>
+            <span className="section-label">See It In Action</span>
+            <div className="section-rule" />
+          </div>
+
+          <SampleVideos />
+        </section>
+
+        <section
+          className="section animate-enter"
+          style={{ animationDelay: "300ms" }}
+        >
+          <div className="section-header">
+            <span className="section-label">How It Works</span>
             <div className="section-rule" />
           </div>
 
@@ -74,11 +75,10 @@ export default function Home() {
                   />
                 </svg>
               </div>
-              <div className="step-title">Input Source</div>
+              <div className="step-title">Paste a URL</div>
               <div className="step-desc">
-                Submit any public GitHub repository URL. The system seamlessly
-                pulls the latest source files—no authentication or complex
-                integrations required.
+                Enter any public GitHub repository URL. No authentication
+                needed.
               </div>
             </div>
 
@@ -100,11 +100,10 @@ export default function Home() {
                   />
                 </svg>
               </div>
-              <div className="step-title">Logic Extraction</div>
+              <div className="step-title">AI Analyzes & Scripts</div>
               <div className="step-desc">
-                The core analysis engine maps the architecture, identifies the
-                primary tech stack, and authors a timeline-accurate script with
-                synchronized visual scenes.
+                AI agents read the codebase and write a narration script
+                with visual scenes.
               </div>
             </div>
 
@@ -133,120 +132,23 @@ export default function Home() {
               </div>
               <div className="step-title">Render & Export</div>
               <div className="step-desc">
-                A dynamically themed 1920×1080 export is compiled with perfectly
-                timed voice audio. The resulting MP4 is optimized and ready for
-                distribution.
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ── Features ── */}
-        <section
-          className="section animate-enter"
-          style={{ animationDelay: "300ms" }}
-        >
-          <div className="section-header">
-            <span className="section-label">Technical Specifications</span>
-            <div className="section-rule" />
-          </div>
-
-          <div className="features-grid">
-            <div className="feature-item">
-              <div className="feature-dot" />
-              <div className="feature-text">
-                <h4>Comprehensive Code Parsing</h4>
-                <p>
-                  Going beyond superficial README scraping. AutoMotion evaluates
-                  real file hierarchies, source dependencies, and key
-                  application logic.
-                </p>
-              </div>
-            </div>
-
-            <div className="feature-item">
-              <div className="feature-dot" />
-              <div className="feature-text">
-                <h4>Adaptive Visual Environments</h4>
-                <p>
-                  The rendering engine automatically assigns visual themes based
-                  on framework domains (e.g., frontend frameworks trigger modern
-                  aesthetics, devops tools utilize terminal themes).
-                </p>
-              </div>
-            </div>
-
-            <div className="feature-item">
-              <div className="feature-dot" />
-              <div className="feature-text">
-                <h4>Dynamic Audio Synthesis</h4>
-                <p>
-                  Integrated TTS pipelines ensure voiceovers that are
-                  programmatically synced down to the millisecond with moving
-                  visual scenes.
-                </p>
-              </div>
-            </div>
-
-            <div className="feature-item">
-              <div className="feature-dot" />
-              <div className="feature-text">
-                <h4>High-Fidelity Output Format</h4>
-                <p>
-                  Exports as a standard 1920×1080 file, compatible across modern
-                  browsers, standard social media, or your internal chat
-                  networks.
-                </p>
-              </div>
-            </div>
-
-            <div className="feature-item">
-              <div className="feature-dot" />
-              <div className="feature-text">
-                <h4>Real-Time Progress WebSockets</h4>
-                <p>
-                  Never wait blindly. A low-latency WebSocket connection pushes
-                  telemetry data from the processing cluster directly to your
-                  active browser session.
-                </p>
-              </div>
-            </div>
-
-            <div className="feature-item">
-              <div className="feature-dot" />
-              <div className="feature-text">
-                <h4>Programmatic Transitions</h4>
-                <p>
-                  Scenes are chained using smooth cross-fade techniques with
-                  algorithmic easing, ensuring pacing matches the spoken word
-                  frequency.
-                </p>
+                A 1080p video is rendered with synced voiceover and
+                exported as MP4.
               </div>
             </div>
           </div>
         </section>
       </div>
 
-      {/* ── Footer ── */}
       <footer
         className="footer animate-enter"
         style={{ animationDelay: "400ms" }}
       >
         <div className="container footer-inner">
           <span className="footer-text">AutoMotion &copy; 2026</span>
-          <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-            <a
-              href={`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"}/docs`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="footer-link"
-            >
-              API Docs ↗
-            </a>
-            <span className="footer-stack">
-              Developed for the Orion Build Hackathon
-            </span>
-          </div>
+          <span className="footer-stack">
+            Developed for the Orion Build Hackathon
+          </span>
         </div>
       </footer>
     </main>

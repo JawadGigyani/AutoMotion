@@ -1,0 +1,27 @@
+# Dependencies (reinstalled in Docker)
+**/node_modules
+**/venv
+**/__pycache__
+
+# Environment files with secrets
+**/.env
+**/.env.local
+
+# Generated outputs
+backend/outputs/*
+!backend/outputs/.gitkeep
+
+# Frontend (deployed on Vercel, not in this container)
+frontend/
+
+# IDE / OS
+.git
+.cursor
+.vscode
+*.md
+project_audit.md
+*.ps1
+
+# Misc
+**/.next
+**/dist

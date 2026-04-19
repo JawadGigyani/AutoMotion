@@ -1,0 +1,37 @@
+WEBVTT
+
+1
+00:00:00.000 --> 00:00:03.546
+Welcome to StoryWeave, where AI meets mental wellness.
+
+2
+00:00:03.546 --> 00:00:14.390
+In a world where mental health is increasingly important, StoryWeave offers a unique solution: personalized therapeutic stories with AI-narrated audio and custom background music.
+
+3
+00:00:14.390 --> 00:00:24.477
+Built with cutting-edge technologies, StoryWeave leverages the power of Next.js for the frontend and FastAPI for the backend, ensuring a seamless user experience.
+
+4
+00:00:24.477 --> 00:00:34.114
+Let's dive into the heart of the backend. This is how StoryWeave integrates multiple AI services and audio processing tools within a single API endpoint.
+
+5
+00:00:34.114 --> 00:00:40.511
+The frontend is equally impressive, with a modern tech stack that ensures a responsive and engaging user interface.
+
+6
+00:00:40.511 --> 00:00:47.076
+Getting started is straightforward. Clone the repository, install dependencies, and run the development servers.
+
+7
+00:00:47.076 --> 00:00:57.532
+StoryWeave stands out with its ability to generate personalized stories, lifelike narrations, and custom background music, all seamlessly integrated into a single platform.
+
+8
+00:00:57.532 --> 00:01:07.083
+With 0 stars and 0 forks, StoryWeave is a fresh project with immense potential. Contributing now means shaping the future of mental wellness through technology.
+
+9
+00:01:07.083 --> 00:01:13.304
+Fork the repository today and join the journey of transforming mental wellness through AI-powered storytelling.

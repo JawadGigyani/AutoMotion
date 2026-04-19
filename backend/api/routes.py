@@ -2,18 +2,20 @@
 AutoMotion — API Routes
 REST endpoints for video generation, status polling, and results.
 """
-import uuid
-import time
+
 import asyncio
+import time
+import uuid
 from typing import Optional
 
+import httpx
+from agents.pipeline import run_pipeline
+from config import MAX_CONCURRENT_JOBS, REMOTION_RENDER_URL
 from fastapi import APIRouter, BackgroundTasks, HTTPException
 from pydantic import BaseModel
-
-from agents.pipeline import run_pipeline
-from api.websocket import send_progress_update
-from config import MAX_CONCURRENT_JOBS
 from utils.file_utils import cleanup_old_jobs
+
+from api.websocket import send_progress_update
 
 router = APIRouter()
 
@@ -33,7 +35,8 @@ async def _periodic_cleanup() -> None:
         try:
             now = time.time()
             expired_ids = [
-                jid for jid, j in jobs.items()
+                jid
+                for jid, j in jobs.items()
                 if now - j.get("created_at", now) > JOB_TTL_SECONDS
                 and j.get("status") in ("completed", "failed")
             ]
@@ -60,8 +63,8 @@ def start_cleanup_loop() -> None:
         print("[CLEANUP] Background cleanup started (TTL=45min, interval=5min)")
 
 
-
 # ── Request / Response models ──
+
 
 class GenerateRequest(BaseModel):
     repo_url: str
@@ -89,11 +92,15 @@ class ResultResponse(BaseModel):
     repo_url: str
     theme: Optional[str] = None
     subtitle_url: Optional[str] = None
+    thumbnail_url: Optional[str] = None
 
 
 # ── Background pipeline execution ──
 
-async def _run_pipeline_task(job_id: str, repo_url: str, theme_id: str = None, voice_id: str = None):
+
+async def _run_pipeline_task(
+    job_id: str, repo_url: str, theme_id: str = None, voice_id: str = None, voice_style: str = None
+):
     """Run the LangGraph pipeline in the background with progress tracking."""
     try:
         jobs[job_id]["status"] = "processing"
@@ -113,6 +120,7 @@ async def _run_pipeline_task(job_id: str, repo_url: str, theme_id: str = None, v
             progress_callback=on_progress,
             theme_id=theme_id,
             voice_id=voice_id,
+            voice_style=voice_style,
         )
 
         jobs[job_id]["status"] = "completed"
@@ -122,36 +130,43 @@ async def _run_pipeline_task(job_id: str, repo_url: str, theme_id: str = None, v
 
         # Subtitle URL (if SRT was generated)
         if result.get("subtitle_path"):
-            jobs[job_id]["subtitle_url"] = f"/outputs/{job_id}/subtitles.srt"
+            jobs[job_id]["subtitle_url"] = f"/outputs/{job_id}/subtitles.vtt"
 
         # Thumbnail URL (if thumbnail was generated)
         if result.get("thumbnail_path"):
             jobs[job_id]["thumbnail_url"] = f"/outputs/{job_id}/thumbnail.png"
 
-        # Send final WebSocket update
-        await send_progress_update(job_id, {
-            "step": "complete",
-            "progress": 100,
-            "message": "Video ready!",
-            "status": "completed",
-            "video_url": f"/outputs/{job_id}/video.mp4",
-            "subtitle_url": jobs[job_id].get("subtitle_url"),
-        })
+        await send_progress_update(
+            job_id,
+            {
+                "step": "complete",
+                "progress": 100,
+                "message": "Video ready!",
+                "status": "completed",
+                "video_url": f"/outputs/{job_id}/video.mp4",
+                "subtitle_url": jobs[job_id].get("subtitle_url"),
+                "thumbnail_url": jobs[job_id].get("thumbnail_url"),
+            },
+        )
 
     except Exception as e:
         print(f"[ERROR] Pipeline failed for job {job_id[:8]}: {e}")
         jobs[job_id]["status"] = "failed"
         jobs[job_id]["error"] = str(e)
 
-        await send_progress_update(job_id, {
-            "step": "error",
-            "progress": 0,
-            "message": str(e),
-            "status": "failed",
-        })
+        await send_progress_update(
+            job_id,
+            {
+                "step": "error",
+                "progress": 0,
+                "message": str(e),
+                "status": "failed",
+            },
+        )
 
 
 # ── Endpoints ──
+
 
 @router.post("/generate", response_model=GenerateResponse)
 async def generate_video(request: GenerateRequest):
@@ -165,8 +180,7 @@ async def generate_video(request: GenerateRequest):
     # Basic sanity check — must look like a GitHub URL or owner/repo
     url_lower = repo_url.lower()
     is_github = (
-        "github.com/" in url_lower
-        or url_lower.count("/") == 1  # owner/repo shorthand
+        "github.com/" in url_lower or url_lower.count("/") == 1  # owner/repo shorthand
     )
     if not is_github:
         raise HTTPException(
@@ -176,14 +190,13 @@ async def generate_video(request: GenerateRequest):
 
     # ── Rate limiting ────────────────────────────────────────────────
     active_jobs = sum(
-        1 for j in jobs.values()
-        if j.get("status") in ("pending", "processing")
+        1 for j in jobs.values() if j.get("status") in ("pending", "processing")
     )
     if active_jobs >= MAX_CONCURRENT_JOBS:
         raise HTTPException(
             status_code=429,
             detail=f"Server is busy — {active_jobs} jobs are already running. "
-                   f"Please try again in a minute.",
+            f"Please try again in a minute.",
         )
 
     # ── Create the job ───────────────────────────────────────────────
@@ -201,8 +214,17 @@ async def generate_video(request: GenerateRequest):
         "created_at": time.time(),
     }
 
-    # Run pipeline in background
-    asyncio.create_task(_run_pipeline_task(job_id, repo_url, theme_id=request.theme_id, voice_id=request.voice_id))
+    # Resolve voice style from selected voice ID
+    voice_style = VOICE_STYLE_MAP.get(request.voice_id, None) if request.voice_id else None
+
+    asyncio.create_task(
+        _run_pipeline_task(
+            job_id, repo_url,
+            theme_id=request.theme_id,
+            voice_id=request.voice_id,
+            voice_style=voice_style,
+        )
+    )
 
     print(f"\n[NEW] Job created: {job_id[:8]}... ({repo_url})")
 
@@ -238,13 +260,16 @@ async def get_result(job_id: str):
 
     job = jobs[job_id]
     if job["status"] != "completed":
-        raise HTTPException(status_code=400, detail=f"Job is not complete: {job['status']}")
+        raise HTTPException(
+            status_code=400, detail=f"Job is not complete: {job['status']}"
+        )
 
     return ResultResponse(
         video_url=job["video_url"],
         repo_url=job["repo_url"],
         theme=job.get("theme"),
         subtitle_url=job.get("subtitle_url"),
+        thumbnail_url=job.get("thumbnail_url"),
     )
 
 
@@ -252,21 +277,21 @@ async def get_result(job_id: str):
 async def get_themes():
     """Return available video themes for the theme selector dropdown."""
     from services.theme_service import get_all_themes
+
     themes = get_all_themes()
-    return [
-        {"id": tid, "name": t["name"]}
-        for tid, t in themes.items()
-    ]
+    return [{"id": tid, "name": t["name"]} for tid, t in themes.items()]
 
 
 # ── Curated voice list for the frontend selector ──
 AVAILABLE_VOICES = [
-    {"id": "CwhRBWXzGAHq8TQ4Fs17", "name": "Roger", "desc": "Male · American · Casual"},
-    {"id": "EXAVITQu4vr4xnSDxMaL", "name": "Sarah", "desc": "Female · American · Professional"},
-    {"id": "IKne3meq5aSn9XLyUdCD", "name": "Charlie", "desc": "Male · Australian · Energetic"},
-    {"id": "JBFqnCBsd6RMkjVDRZzb", "name": "George", "desc": "Male · British · Storyteller"},
-    {"id": "FGY2WhTYpPnrIDTdsKH5", "name": "Laura", "desc": "Female · American · Enthusiastic"},
+    {"id": "CwhRBWXzGAHq8TQ4Fs17", "name": "Roger", "desc": "Male · American · Casual", "style": "casual"},
+    {"id": "EXAVITQu4vr4xnSDxMaL", "name": "Sarah", "desc": "Female · American · Professional", "style": "professional"},
+    {"id": "IKne3meq5aSn9XLyUdCD", "name": "Charlie", "desc": "Male · Australian · Energetic", "style": "energetic"},
+    {"id": "JBFqnCBsd6RMkjVDRZzb", "name": "George", "desc": "Male · British · Storyteller", "style": "storytelling"},
+    {"id": "FGY2WhTYpPnrIDTdsKH5", "name": "Laura", "desc": "Female · American · Enthusiastic", "style": "enthusiastic"},
 ]
+
+VOICE_STYLE_MAP = {v["id"]: v["style"] for v in AVAILABLE_VOICES}
 
 
 @router.get("/voices")
@@ -275,29 +300,37 @@ async def get_voices():
     return AVAILABLE_VOICES
 
 
-# ── Pre-built sample gallery entries ──
-# These are hardcoded showcase videos that always appear in the gallery.
-# User-generated videos are stored only in frontend sessionStorage.
+# ── Permanent sample entries ──
+# Real renders stored in backend/samples/<Name>/ — never touched by cleanup.
 SAMPLE_GALLERY = [
     {
-        "job_id": "sample-fastapi",
-        "repo_url": "https://github.com/tiangolo/fastapi",
+        "job_id": "sample-storyweave",
+        "repo_url": "https://github.com/JawadGigyani/StoryWeave",
+        "theme": "Neon Cyberpunk",
+        "video_url": "/samples/StoryWeave/video.mp4",
+        "thumbnail_url": "/samples/StoryWeave/thumbnail.png",
+        "subtitle_url": "/samples/StoryWeave/subtitles.vtt",
+        "created_at": "2026-04-19T08:00:00Z",
+        "is_sample": True,
+    },
+    {
+        "job_id": "sample-flask",
+        "repo_url": "https://github.com/pallets/flask",
         "theme": "Ocean Depth",
-        "created_at": "2026-04-15T10:00:00Z",
+        "video_url": "/samples/Flask/video.mp4",
+        "thumbnail_url": "/samples/Flask/thumbnail.png",
+        "subtitle_url": "/samples/Flask/subtitles.vtt",
+        "created_at": "2026-04-19T09:00:00Z",
         "is_sample": True,
     },
     {
         "job_id": "sample-langchain",
         "repo_url": "https://github.com/langchain-ai/langchain",
-        "theme": "Neon Cyberpunk",
-        "created_at": "2026-04-16T14:30:00Z",
-        "is_sample": True,
-    },
-    {
-        "job_id": "sample-automotion",
-        "repo_url": "https://github.com/JawadGigyani/AutoMotion",
         "theme": "Dark Cinematic",
-        "created_at": "2026-04-17T09:00:00Z",
+        "video_url": "/samples/LangChain/video.mp4",
+        "thumbnail_url": "/samples/LangChain/thumbnail.png",
+        "subtitle_url": "/samples/LangChain/subtitles.vtt",
+        "created_at": "2026-04-19T10:00:00Z",
         "is_sample": True,
     },
 ]
@@ -305,21 +338,16 @@ SAMPLE_GALLERY = [
 
 @router.get("/gallery")
 async def get_gallery():
-    """Return gallery entries: hardcoded samples + any completed jobs still in memory."""
-    gallery = list(SAMPLE_GALLERY)
+    """Return permanent sample entries for the landing page."""
+    return SAMPLE_GALLERY
 
-    # Also include any completed jobs currently in memory
-    for jid, job in jobs.items():
-        if job.get("status") == "completed" and job.get("video_url"):
-            gallery.append({
-                "job_id": jid,
-                "repo_url": job.get("repo_url", ""),
-                "theme": job.get("theme", ""),
-                "video_url": job.get("video_url", ""),
-                "subtitle_url": job.get("subtitle_url"),
-                "thumbnail_url": job.get("thumbnail_url"),
-                "created_at": job.get("created_at", 0),
-                "is_sample": False,
-            })
 
-    return gallery
+@router.get("/render-health")
+async def render_health():
+    """Proxy health check to the internal Remotion render server."""
+    try:
+        async with httpx.AsyncClient(timeout=5.0) as client:
+            resp = await client.get(f"{REMOTION_RENDER_URL}/health")
+            return resp.json()
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"Render server unreachable: {e}")

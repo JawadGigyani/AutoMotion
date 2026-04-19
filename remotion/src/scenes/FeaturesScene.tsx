@@ -1,6 +1,6 @@
 /**
  * AutoMotion — Features Scene
- * Feature cards sliding in with staggered timing.
+ * Feature cards with staggered animation. Shape/style varies per theme.
  */
 import React from "react";
 import {
@@ -15,6 +15,12 @@ import { NoiseBackground } from "../components/NoiseBackground";
 
 type Feature = { title?: string; description?: string };
 
+const CARD_RADIUS: Record<string, number> = {
+  rounded: 14,
+  sharp: 3,
+  pill: 24,
+};
+
 export const FeaturesScene: React.FC<{
   content: { features?: (Feature | string)[] };
   background_variant?: string;
@@ -22,20 +28,39 @@ export const FeaturesScene: React.FC<{
   const frame = useCurrentFrame();
   const { fps, durationInFrames } = useVideoConfig();
   const theme = useTheme();
+  const { layout } = theme;
 
-  const titleProgress = spring({ frame, fps, config: { damping: 15, stiffness: 80 } });
-
-  const exitStart = Math.max(0, durationInFrames - 10);
-  const exitOpacity = interpolate(frame, [exitStart, durationInFrames], [1, 0], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
+  const titleProgress = spring({
+    frame,
+    fps,
+    config: { damping: 15, stiffness: 80 },
   });
 
-  // Normalize features — can be string[] or {title, description}[]
+  const exitStart = Math.max(0, durationInFrames - 10);
+  const exitOpacity = interpolate(
+    frame,
+    [exitStart, durationInFrames],
+    [1, 0],
+    { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+  );
+
   const features = (content.features || []).map((f) => {
     if (typeof f === "string") return { title: f, description: "" };
     return f;
   });
+
+  const radius = CARD_RADIUS[layout.cardStyle] ?? 14;
+
+  const labelStyle: React.CSSProperties = {
+    fontSize: 28,
+    fontWeight: 600,
+    fontFamily: theme.fonts.body,
+    color: theme.colors.accent,
+    letterSpacing: layout.sectionLabelStyle === "uppercase" ? "4px" : "1px",
+    textTransform: layout.sectionLabelStyle === "none" ? undefined : layout.sectionLabelStyle,
+    marginBottom: 40,
+    opacity: titleProgress,
+  };
 
   return (
     <AbsoluteFill>
@@ -48,29 +73,16 @@ export const FeaturesScene: React.FC<{
           opacity: exitOpacity,
         }}
       >
-        {/* Section title */}
-        <div
-          style={{
-            fontSize: 28,
-            fontWeight: 600,
-            fontFamily: theme.fonts.body,
-            color: theme.colors.accent,
-            textTransform: "uppercase",
-            letterSpacing: "4px",
-            marginBottom: 40,
-            opacity: titleProgress,
-          }}
-        >
-          Key Features
+        <div style={labelStyle}>
+          {layout.sectionLabelStyle === "none" ? "> features" : "Key Features"}
         </div>
 
-        {/* Feature cards */}
         <div
           style={{
             display: "flex",
             flexDirection: "column",
             gap: 20,
-            width: "80%",
+            width: layout.contentMaxWidth,
           }}
         >
           {features.slice(0, 4).map((feature, i) => {
@@ -89,19 +101,18 @@ export const FeaturesScene: React.FC<{
                   alignItems: "center",
                   gap: 20,
                   padding: "20px 30px",
-                  borderRadius: 14,
+                  borderRadius: radius,
                   backgroundColor: `${theme.colors.cardBg}cc`,
-                  border: `1px solid ${theme.colors.accent}25`,
+                  border: `${layout.cardBorderWidth}px solid ${theme.colors.accent}25`,
                   opacity: progress,
                   transform: `translateX(${(1 - progress) * -60}px)`,
                 }}
               >
-                {/* Accent dot */}
                 <div
                   style={{
                     width: 10,
                     height: 10,
-                    borderRadius: 5,
+                    borderRadius: layout.cardStyle === "sharp" ? 2 : 5,
                     backgroundColor: theme.colors.accent,
                     flexShrink: 0,
                   }}

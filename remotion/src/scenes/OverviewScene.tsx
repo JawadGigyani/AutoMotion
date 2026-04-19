@@ -1,6 +1,6 @@
 /**
  * AutoMotion — Overview Scene
- * Project description with metadata badges.
+ * Project description with metadata badges. Adapts to theme layout.
  */
 import React from "react";
 import {
@@ -21,16 +21,24 @@ export const OverviewScene: React.FC<{
   const frame = useCurrentFrame();
   const { fps, durationInFrames } = useVideoConfig();
   const theme = useTheme();
+  const { layout } = theme;
 
-  const textProgress = spring({ frame, fps, config: { damping: 15, stiffness: 80 } });
-
-  const exitStart = Math.max(0, durationInFrames - 10);
-  const exitOpacity = interpolate(frame, [exitStart, durationInFrames], [1, 0], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
+  const textProgress = spring({
+    frame,
+    fps,
+    config: { damping: 15, stiffness: 80 },
   });
 
+  const exitStart = Math.max(0, durationInFrames - 10);
+  const exitOpacity = interpolate(
+    frame,
+    [exitStart, durationInFrames],
+    [1, 0],
+    { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+  );
+
   const badges = content.badges || [];
+  const isLeft = layout.titleAlign === "left";
 
   return (
     <AbsoluteFill>
@@ -38,29 +46,29 @@ export const OverviewScene: React.FC<{
       <AbsoluteFill
         style={{
           justifyContent: "center",
-          alignItems: "center",
-          padding: 100,
+          alignItems: isLeft ? "flex-start" : "center",
+          padding: isLeft ? "80px 120px" : 100,
           opacity: exitOpacity,
         }}
       >
-        {/* Description */}
         <div
           style={{
             fontSize: 42,
             fontWeight: 400,
             fontFamily: theme.fonts.body,
             color: theme.colors.text,
-            textAlign: "center",
+            textAlign: isLeft ? "left" : "center",
             lineHeight: 1.6,
             opacity: textProgress,
-            transform: `translateY(${(1 - textProgress) * 40}px)`,
-            maxWidth: "85%",
+            transform: isLeft
+              ? `translateX(${(1 - textProgress) * -40}px)`
+              : `translateY(${(1 - textProgress) * 40}px)`,
+            maxWidth: layout.contentMaxWidth,
           }}
         >
           {content.description || "An open source project."}
         </div>
 
-        {/* Badges */}
         {badges.length > 0 && (
           <div
             style={{
@@ -68,7 +76,7 @@ export const OverviewScene: React.FC<{
               gap: 16,
               marginTop: 40,
               flexWrap: "wrap",
-              justifyContent: "center",
+              justifyContent: isLeft ? "flex-start" : "center",
             }}
           >
             {badges.map((badge, i) => (

@@ -1,12 +1,14 @@
 # IDEs
 .idea/
 .vscode/
+.cursor/
 
 # Python
 __pycache__/
 *.pyc
 venv/
 .env
+.env.local
 
 # Node.js
 node_modules/
@@ -15,6 +17,10 @@ dist/
 
 # Project specifics
 backend/outputs/
+
+# Test files
+backend/test_*.py
+backend/integration_test*.py
 
 # Mac
 .DS_Store

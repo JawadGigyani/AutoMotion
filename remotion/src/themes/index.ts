@@ -1,5 +1,7 @@
 /**
- * AutoMotion — Theme Type Definitions & All Theme Data
+ * AutoMotion — Theme Definitions
+ * Each theme defines colors, fonts, AND layout personality so
+ * videos look structurally different across themes.
  */
 
 export type ThemeColors = {
@@ -21,11 +23,22 @@ export type ThemeFonts = {
   code: string;
 };
 
+export type ThemeLayout = {
+  titleAlign: "center" | "left";
+  titleSize: number;
+  sectionLabelStyle: "uppercase" | "capitalize" | "none";
+  cardStyle: "rounded" | "sharp" | "pill";
+  cardBorderWidth: number;
+  accentBarHeight: number;
+  contentMaxWidth: string;
+};
+
 export type Theme = {
   id: string;
   name: string;
   colors: ThemeColors;
   fonts: ThemeFonts;
+  layout: ThemeLayout;
 };
 
 // ── Dark Cinematic ──
@@ -45,6 +58,15 @@ export const darkCinematic: Theme = {
     cardBg: "#16162a",
   },
   fonts: { heading: "Inter", body: "Inter", code: "'JetBrains Mono'" },
+  layout: {
+    titleAlign: "center",
+    titleSize: 82,
+    sectionLabelStyle: "uppercase",
+    cardStyle: "rounded",
+    cardBorderWidth: 2,
+    accentBarHeight: 4,
+    contentMaxWidth: "85%",
+  },
 };
 
 // ── Neon Cyberpunk ──
@@ -54,7 +76,8 @@ export const neonCyberpunk: Theme = {
   colors: {
     bgPrimary: "#0d0221",
     bgSecondary: "#150530",
-    bgGradient: "linear-gradient(135deg, #0d0221 0%, #150530 50%, #0a0118 100%)",
+    bgGradient:
+      "linear-gradient(135deg, #0d0221 0%, #150530 50%, #0a0118 100%)",
     accent: "#ff00ff",
     accentSecondary: "#00ffff",
     text: "#f0e6ff",
@@ -64,6 +87,15 @@ export const neonCyberpunk: Theme = {
     cardBg: "#120428",
   },
   fonts: { heading: "Inter", body: "Inter", code: "'JetBrains Mono'" },
+  layout: {
+    titleAlign: "left",
+    titleSize: 88,
+    sectionLabelStyle: "uppercase",
+    cardStyle: "sharp",
+    cardBorderWidth: 1,
+    accentBarHeight: 3,
+    contentMaxWidth: "90%",
+  },
 };
 
 // ── Minimal Light ──
@@ -83,6 +115,15 @@ export const minimalLight: Theme = {
     cardBg: "#ffffff",
   },
   fonts: { heading: "Inter", body: "Inter", code: "'JetBrains Mono'" },
+  layout: {
+    titleAlign: "center",
+    titleSize: 76,
+    sectionLabelStyle: "capitalize",
+    cardStyle: "rounded",
+    cardBorderWidth: 1,
+    accentBarHeight: 2,
+    contentMaxWidth: "80%",
+  },
 };
 
 // ── Terminal Green ──
@@ -101,7 +142,20 @@ export const terminalGreen: Theme = {
     codeText: "#00ff41",
     cardBg: "#0d1a0d",
   },
-  fonts: { heading: "'JetBrains Mono'", body: "'JetBrains Mono'", code: "'JetBrains Mono'" },
+  fonts: {
+    heading: "'JetBrains Mono'",
+    body: "'JetBrains Mono'",
+    code: "'JetBrains Mono'",
+  },
+  layout: {
+    titleAlign: "left",
+    titleSize: 72,
+    sectionLabelStyle: "none",
+    cardStyle: "sharp",
+    cardBorderWidth: 1,
+    accentBarHeight: 2,
+    contentMaxWidth: "88%",
+  },
 };
 
 // ── Ocean Depth ──
@@ -121,6 +175,15 @@ export const oceanDepth: Theme = {
     cardBg: "#112240",
   },
   fonts: { heading: "Inter", body: "Inter", code: "'JetBrains Mono'" },
+  layout: {
+    titleAlign: "center",
+    titleSize: 80,
+    sectionLabelStyle: "capitalize",
+    cardStyle: "pill",
+    cardBorderWidth: 1,
+    accentBarHeight: 3,
+    contentMaxWidth: "82%",
+  },
 };
 
 // ── Lookup ──

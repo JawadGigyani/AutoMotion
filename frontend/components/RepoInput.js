@@ -204,6 +204,24 @@ export default function RepoInput() {
 
         {error && <div className="input-error">{error}</div>}
       </form>
+
+      <div className="example-repos">
+        <span className="example-label">Try:</span>
+        {["facebook/react", "pallets/flask", "langchain-ai/langchain"].map((repo) => (
+          <button
+            key={repo}
+            className="example-chip"
+            type="button"
+            onClick={() => {
+              setUrl(`https://github.com/${repo}`);
+              if (error) setError("");
+            }}
+            disabled={loading}
+          >
+            {repo}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
