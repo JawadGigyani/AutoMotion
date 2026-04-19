@@ -30,13 +30,22 @@ function GenerateContent() {
         ? `${backendUrl}${relativeVideoUrl}`
         : `${backendUrl}/outputs/${jobId}/video.mp4`;
 
+      let themeName = "";
+      let subtitleRel = "";
+
       // Optionally fetch the result endpoint to get the theme name
       try {
         const res = await fetch(`${backendUrl}/api/result/${jobId}`);
         if (res.ok) {
           const data = await res.json();
-          if (data.theme) setTheme(data.theme);
-          if (data.subtitle_url) setSubtitleUrl(`${backendUrl}${data.subtitle_url}`);
+          if (data.theme) {
+            themeName = data.theme;
+            setTheme(data.theme);
+          }
+          if (data.subtitle_url) {
+            subtitleRel = data.subtitle_url;
+            setSubtitleUrl(`${backendUrl}${data.subtitle_url}`);
+          }
         }
       } catch {
         // theme is cosmetic — don't fail if fetch errors
@@ -44,8 +53,33 @@ function GenerateContent() {
 
       setVideoUrl(fullUrl);
       setPageStatus("completed");
+
+      // Save to sessionStorage for gallery (survives navigation, clears on tab close)
+      try {
+        const existing = JSON.parse(
+          sessionStorage.getItem("automotion_gallery") || "[]"
+        );
+        // Avoid duplicates
+        if (!existing.find((e) => e.job_id === jobId)) {
+          existing.unshift({
+            job_id: jobId,
+            repo_url: decodeURIComponent(repoUrl),
+            theme: themeName,
+            video_url: relativeVideoUrl || `/outputs/${jobId}/video.mp4`,
+            subtitle_url: subtitleRel || null,
+            created_at: new Date().toISOString(),
+            is_sample: false,
+          });
+          sessionStorage.setItem(
+            "automotion_gallery",
+            JSON.stringify(existing.slice(0, 20)) // Keep last 20
+          );
+        }
+      } catch {
+        // sessionStorage unavailable — ignore
+      }
     },
-    [jobId],
+    [jobId, repoUrl],
   );
 
   const handleError = useCallback((msg) => {
@@ -65,6 +99,7 @@ function GenerateContent() {
             <div className="nav-logo">
               AutoMotion
             </div>
+            <a href="/gallery" className="nav-link">Gallery →</a>
           </div>
         </nav>
         <div className="container gen-content">
@@ -93,6 +128,7 @@ function GenerateContent() {
           <div className="nav-logo">
             AutoMotion
           </div>
+          <a href="/gallery" className="nav-link">Gallery →</a>
         </div>
       </nav>
 

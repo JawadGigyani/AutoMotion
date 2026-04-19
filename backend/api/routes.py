@@ -250,3 +250,52 @@ async def get_themes():
         {"id": tid, "name": t["name"]}
         for tid, t in themes.items()
     ]
+
+
+# ── Pre-built sample gallery entries ──
+# These are hardcoded showcase videos that always appear in the gallery.
+# User-generated videos are stored only in frontend sessionStorage.
+SAMPLE_GALLERY = [
+    {
+        "job_id": "sample-fastapi",
+        "repo_url": "https://github.com/tiangolo/fastapi",
+        "theme": "Ocean Depth",
+        "created_at": "2026-04-15T10:00:00Z",
+        "is_sample": True,
+    },
+    {
+        "job_id": "sample-langchain",
+        "repo_url": "https://github.com/langchain-ai/langchain",
+        "theme": "Neon Cyberpunk",
+        "created_at": "2026-04-16T14:30:00Z",
+        "is_sample": True,
+    },
+    {
+        "job_id": "sample-automotion",
+        "repo_url": "https://github.com/JawadGigyani/AutoMotion",
+        "theme": "Dark Cinematic",
+        "created_at": "2026-04-17T09:00:00Z",
+        "is_sample": True,
+    },
+]
+
+
+@router.get("/gallery")
+async def get_gallery():
+    """Return gallery entries: hardcoded samples + any completed jobs still in memory."""
+    gallery = list(SAMPLE_GALLERY)
+
+    # Also include any completed jobs currently in memory
+    for jid, job in jobs.items():
+        if job.get("status") == "completed" and job.get("video_url"):
+            gallery.append({
+                "job_id": jid,
+                "repo_url": job.get("repo_url", ""),
+                "theme": job.get("theme", ""),
+                "video_url": job.get("video_url", ""),
+                "subtitle_url": job.get("subtitle_url"),
+                "created_at": job.get("created_at", 0),
+                "is_sample": False,
+            })
+
+    return gallery

@@ -9,6 +9,9 @@ export default function Home() {
           <div className="nav-logo animate-enter" style={{ animationDelay: "0ms" }}>
             AutoMotion
           </div>
+          <a href="/gallery" className="nav-link animate-enter" style={{ animationDelay: "50ms" }}>
+            Gallery →
+          </a>
         </div>
       </nav>
 
