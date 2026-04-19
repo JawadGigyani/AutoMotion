@@ -3,7 +3,7 @@
 **Turn any GitHub repository into a narrated 1080p explainer video.**
 
 [![Devpost Project](https://img.shields.io/badge/Project-Devpost-blue?style=for-the-badge&logo=devpost)](https://orion-build-challenge.devpost.com/)
-[![Watch the Demo on YouTube](https://img.shields.io/badge/YouTube-Watch_Demo-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://youtu.be/5tpIs1Sgbh4)
+[![Watch the Demo on YouTube](https://img.shields.io/badge/YouTube-Watch_Demo-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/watch?v=Gm8zfuQ1-ro)
 
 AutoMotion is an AI-powered platform that ingests public GitHub repositories, analyzes the architecture and source code using a multi-agent pipeline, and synthesizes a fully narrated, dynamically animated 1080p MP4 explainer video — synced to the millisecond. Paste a URL, get a video.
 
