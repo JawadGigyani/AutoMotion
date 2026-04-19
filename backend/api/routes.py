@@ -225,6 +225,7 @@ async def get_status(job_id: str):
         progress=job.get("progress", 0),
         message=job.get("message"),
         video_url=job.get("video_url"),
+        subtitle_url=job.get("subtitle_url"),
         error=job.get("error"),
     )
 

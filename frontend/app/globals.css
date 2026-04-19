@@ -204,7 +204,7 @@ video {
     padding: 8px;
     border-radius: 12px;
     border: 1px solid var(--border);
-    box-shadow: 0 4px 24px rgba(0,0,0,0.04);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
 }
 
 .input-row {
@@ -952,6 +952,19 @@ video {
     color: var(--text);
 }
 
+/* ── Footer Link ── */
+.footer-link {
+    font-size: 12px;
+    font-family: var(--font-mono);
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: color var(--transition);
+}
+
+.footer-link:hover {
+    color: var(--text);
+}
+
 /* ═══════════════════════════════════════════════════════════════
    GALLERY PAGE
    ═══════════════════════════════════════════════════════════════ */
@@ -1000,12 +1013,14 @@ video {
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
     overflow: hidden;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
 }
 
 .gallery-card:hover {
     transform: translateY(-3px);
-    box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
 }
 
 .gallery-thumb {

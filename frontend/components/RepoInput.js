@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 const THEMES = [
@@ -27,6 +27,19 @@ export default function RepoInput() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
+
+  // Read ?prefill=<url> from the query string (set by gallery "Generate" links)
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const prefill = params.get("prefill");
+      if (prefill) {
+        setUrl(decodeURIComponent(prefill));
+      }
+    } catch {
+      // URLSearchParams unavailable in some SSR edge cases — ignore
+    }
+  }, []);
 
   const isValidGithubUrl = (value) => {
     const trimmed = value.trim();
@@ -152,7 +165,9 @@ export default function RepoInput() {
         {/* Theme & Voice selectors */}
         <div className="options-row">
           <div className="option-group">
-            <label className="option-label" htmlFor="theme-select">Theme</label>
+            <label className="option-label" htmlFor="theme-select">
+              Theme
+            </label>
             <select
               id="theme-select"
               className="option-select"
@@ -161,12 +176,16 @@ export default function RepoInput() {
               disabled={loading}
             >
               {THEMES.map((t) => (
-                <option key={t.id} value={t.id}>{t.name}</option>
+                <option key={t.id} value={t.id}>
+                  {t.name}
+                </option>
               ))}
             </select>
           </div>
           <div className="option-group">
-            <label className="option-label" htmlFor="voice-select">Voice</label>
+            <label className="option-label" htmlFor="voice-select">
+              Voice
+            </label>
             <select
               id="voice-select"
               className="option-select"
@@ -175,7 +194,9 @@ export default function RepoInput() {
               disabled={loading}
             >
               {VOICES.map((v) => (
-                <option key={v.id} value={v.id}>{v.name}</option>
+                <option key={v.id} value={v.id}>
+                  {v.name}
+                </option>
               ))}
             </select>
           </div>
