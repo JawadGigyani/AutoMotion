@@ -2,9 +2,9 @@
 
 /**
  * AutoMotion — VideoPlayer Component
- * Displays the rendered video with download and GitHub link actions.
+ * Displays the rendered video with download, subtitle, and GitHub link actions.
  */
-export default function VideoPlayer({ videoUrl, repoUrl, theme }) {
+export default function VideoPlayer({ videoUrl, subtitleUrl, repoUrl, theme }) {
   const handleDownload = async () => {
     try {
       // Fetch and create a blob URL so the download attribute works cross-origin
@@ -21,6 +21,24 @@ export default function VideoPlayer({ videoUrl, repoUrl, theme }) {
     } catch {
       // Fallback: open in new tab
       window.open(videoUrl, '_blank');
+    }
+  };
+
+  const handleDownloadSubtitles = async () => {
+    if (!subtitleUrl) return;
+    try {
+      const res = await fetch(subtitleUrl);
+      const blob = await res.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = 'automotion.srt';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 10_000);
+    } catch {
+      window.open(subtitleUrl, '_blank');
     }
   };
 
@@ -45,8 +63,8 @@ export default function VideoPlayer({ videoUrl, repoUrl, theme }) {
           autoPlay
           playsInline
           src={videoUrl}
+          crossOrigin="anonymous"
           onError={(e) => {
-            // If the video fails to load, show a helpful message
             e.target.style.display = 'none';
             const msg = document.createElement('div');
             msg.style.cssText =
@@ -54,7 +72,16 @@ export default function VideoPlayer({ videoUrl, repoUrl, theme }) {
             msg.textContent = 'Video unavailable — check backend is running';
             e.target.parentNode.insertBefore(msg, e.target);
           }}
-        />
+        >
+          {subtitleUrl && (
+            <track
+              kind="captions"
+              src={subtitleUrl}
+              srcLang="en"
+              label="English"
+            />
+          )}
+        </video>
 
         {/* Actions */}
         <div className="video-actions">
@@ -65,6 +92,16 @@ export default function VideoPlayer({ videoUrl, repoUrl, theme }) {
           >
             ↓ Download MP4
           </button>
+
+          {subtitleUrl && (
+            <button
+              className="btn-secondary"
+              onClick={handleDownloadSubtitles}
+              type="button"
+            >
+              ↓ Subtitles (.srt)
+            </button>
+          )}
 
           {repoUrl && (
             <a

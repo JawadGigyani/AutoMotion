@@ -79,6 +79,7 @@ class StatusResponse(BaseModel):
     progress: int = 0
     message: Optional[str] = None
     video_url: Optional[str] = None
+    subtitle_url: Optional[str] = None
     error: Optional[str] = None
 
 
@@ -86,6 +87,7 @@ class ResultResponse(BaseModel):
     video_url: str
     repo_url: str
     theme: Optional[str] = None
+    subtitle_url: Optional[str] = None
 
 
 # ── Background pipeline execution ──
@@ -116,6 +118,10 @@ async def _run_pipeline_task(job_id: str, repo_url: str, theme_id: str = None):
         jobs[job_id]["video_url"] = f"/outputs/{job_id}/video.mp4"
         jobs[job_id]["theme"] = result.get("theme", {}).get("name", "")
 
+        # Subtitle URL (if SRT was generated)
+        if result.get("subtitle_path"):
+            jobs[job_id]["subtitle_url"] = f"/outputs/{job_id}/subtitles.srt"
+
         # Send final WebSocket update
         await send_progress_update(job_id, {
             "step": "complete",
@@ -123,6 +129,7 @@ async def _run_pipeline_task(job_id: str, repo_url: str, theme_id: str = None):
             "message": "Video ready!",
             "status": "completed",
             "video_url": f"/outputs/{job_id}/video.mp4",
+            "subtitle_url": jobs[job_id].get("subtitle_url"),
         })
 
     except Exception as e:
@@ -230,6 +237,7 @@ async def get_result(job_id: str):
         video_url=job["video_url"],
         repo_url=job["repo_url"],
         theme=job.get("theme"),
+        subtitle_url=job.get("subtitle_url"),
     )
 
 

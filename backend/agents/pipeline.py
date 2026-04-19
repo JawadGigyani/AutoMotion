@@ -20,6 +20,7 @@ from services.voice_service import (
 )
 from utils.file_utils import get_job_dir
 from utils.url_parser import parse_github_url
+from utils.srt_generator import generate_srt
 
 from agents.repo_analyzer import analyze_repo
 from agents.script_director import write_script_and_scenes
@@ -416,13 +417,28 @@ async def render_video(state: PipelineState) -> dict[str, Any]:
 
     print(f"  [RENDER] Video rendered successfully!")
 
+    # Generate SRT subtitles from scene narrations + audio durations
+    subtitle_path = None
+    try:
+        scenes = state.get("script", {}).get("scenes", [])
+        scene_durations = state.get("scene_audio_durations", [])
+        if scenes and scene_durations:
+            srt_path = str((job_dir / "subtitles.srt").resolve())
+            subtitle_path = generate_srt(scenes, scene_durations, srt_path)
+    except Exception as e:
+        print(f"  [SRT] Warning: subtitle generation failed: {e}")
+
     await _report_progress(job_id, "render_video", 100, "Video ready!")
 
-    return {
+    result = {
         "video_path": output_path,
         "current_step": "render_video",
         "progress": 100,
     }
+    if subtitle_path:
+        result["subtitle_path"] = subtitle_path
+
+    return result
 
 
 # ═══════════════════════════════════════════════════════════════

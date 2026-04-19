@@ -15,6 +15,7 @@ function GenerateContent() {
 
   const [pageStatus, setPageStatus] = useState("in_progress"); // in_progress | completed | failed
   const [videoUrl, setVideoUrl] = useState("");
+  const [subtitleUrl, setSubtitleUrl] = useState("");
   const [theme, setTheme] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
 
@@ -35,6 +36,7 @@ function GenerateContent() {
         if (res.ok) {
           const data = await res.json();
           if (data.theme) setTheme(data.theme);
+          if (data.subtitle_url) setSubtitleUrl(`${backendUrl}${data.subtitle_url}`);
         }
       } catch {
         // theme is cosmetic — don't fail if fetch errors
@@ -134,6 +136,7 @@ function GenerateContent() {
           <div className="animate-enter">
             <VideoPlayer
               videoUrl={videoUrl}
+              subtitleUrl={subtitleUrl}
               repoUrl={decodeURIComponent(repoUrl)}
               theme={theme}
             />
