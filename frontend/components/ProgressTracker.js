@@ -40,13 +40,23 @@ const STEPS = [
   },
 ];
 
+function formatDuration(ms) {
+  const totalSec = Math.floor(ms / 1000);
+  const min = Math.floor(totalSec / 60);
+  const sec = totalSec % 60;
+  if (min > 0) return `${min}m ${sec}s`;
+  return `${sec}s`;
+}
+
 export default function ProgressTracker({ jobId, onComplete, onError }) {
   const [currentStep, setCurrentStep] = useState("");
   const [progress, setProgress] = useState(0);
   const [message, setMessage] = useState("Connecting to server...");
-  const [wsStatus, setWsStatus] = useState("connecting"); // connecting | connected | polling | done | error
+  const [wsStatus, setWsStatus] = useState("connecting");
+  const [elapsed, setElapsed] = useState(0);
 
-  // Stable refs so the effect closure doesn't go stale
+  const startTimeRef = useRef(Date.now());
+
   const onCompleteRef = useRef(onComplete);
   const onErrorRef = useRef(onError);
   useEffect(() => {
@@ -55,6 +65,20 @@ export default function ProgressTracker({ jobId, onComplete, onError }) {
   useEffect(() => {
     onErrorRef.current = onError;
   }, [onError]);
+
+  // Elapsed timer — ticks every second
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setElapsed(Date.now() - startTimeRef.current);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Compute ETA (only meaningful after 15% progress)
+  const eta =
+    progress >= 15
+      ? Math.max(0, elapsed / (progress / 100) - elapsed)
+      : null;
 
   useEffect(() => {
     if (!jobId) return;
@@ -68,11 +92,8 @@ export default function ProgressTracker({ jobId, onComplete, onError }) {
     let pingTimer = null;
     let pollTimer = null;
 
-    // ── Shared data handler ──────────────────────────────────────
     function handleData(data) {
       if (done) return;
-
-      // Ignore keepalive frames
       if (data.type === "ping" || data.type === "pong") return;
 
       setCurrentStep(data.step || "");
@@ -94,7 +115,6 @@ export default function ProgressTracker({ jobId, onComplete, onError }) {
       }
     }
 
-    // ── Polling fallback ─────────────────────────────────────────
     function startPolling() {
       if (pollTimer || done) return;
       setWsStatus("polling");
@@ -116,7 +136,6 @@ export default function ProgressTracker({ jobId, onComplete, onError }) {
       }, 2500);
     }
 
-    // ── Cleanup ──────────────────────────────────────────────────
     function cleanup() {
       clearInterval(pingTimer);
       clearInterval(pollTimer);
@@ -129,7 +148,6 @@ export default function ProgressTracker({ jobId, onComplete, onError }) {
       }
     }
 
-    // ── WebSocket ────────────────────────────────────────────────
     try {
       ws = new WebSocket(`${wsBase}/ws/progress/${jobId}`);
 
@@ -141,7 +159,6 @@ export default function ProgressTracker({ jobId, onComplete, onError }) {
         setWsStatus("connected");
         setMessage("Connected — pipeline starting...");
 
-        // Send a keepalive ping every 25 s to prevent proxy timeouts
         pingTimer = setInterval(() => {
           if (ws.readyState === WebSocket.OPEN) {
             ws.send("ping");
@@ -152,7 +169,6 @@ export default function ProgressTracker({ jobId, onComplete, onError }) {
       ws.onmessage = (evt) => {
         try {
           const data = JSON.parse(evt.data);
-          // Echo pong back for server-side keepalive
           if (data.type === "ping") {
             if (ws.readyState === WebSocket.OPEN)
               ws.send(JSON.stringify({ type: "pong" }));
@@ -164,16 +180,13 @@ export default function ProgressTracker({ jobId, onComplete, onError }) {
         }
       };
 
-      ws.onerror = () => {
-        // onerror is always followed by onclose — start polling there
-      };
+      ws.onerror = () => {};
 
       ws.onclose = () => {
         clearInterval(pingTimer);
         if (!done) startPolling();
       };
     } catch {
-      // WebSocket constructor failed (e.g. unsupported env)
       startPolling();
     }
 
@@ -181,9 +194,8 @@ export default function ProgressTracker({ jobId, onComplete, onError }) {
       done = true;
       cleanup();
     };
-  }, [jobId]); // intentionally only jobId — callbacks go through refs
+  }, [jobId]);
 
-  // ── Helpers ─────────────────────────────────────────────────────
   function stepStatus(stepKey) {
     if (wsStatus === "done") return "done";
     const currentIdx = STEPS.findIndex((s) => s.key === currentStep);
@@ -217,20 +229,27 @@ export default function ProgressTracker({ jobId, onComplete, onError }) {
         />
       </div>
 
+      {/* ETA display */}
+      {wsStatus !== "done" && wsStatus !== "error" && (
+        <div className="tracker-eta">
+          {eta !== null
+            ? `~${formatDuration(eta)} remaining`
+            : "Estimating time..."}
+        </div>
+      )}
+
       {/* Step list */}
       <div className="tracker-steps">
         {STEPS.map((step, i) => {
           const status = stepStatus(step.key);
           return (
             <div key={step.key} className="tracker-step">
-              {/* Icon */}
               <div
                 className={`step-icon${status === "done" ? " done" : status === "active" ? " active" : ""}`}
               >
                 {status === "done" ? "✓" : String(i + 1).padStart(2, "0")}
               </div>
 
-              {/* Labels */}
               <div className="step-info">
                 <div
                   className={`step-label${status === "done" ? " done" : status === "active" ? " active" : ""}`}
@@ -247,10 +266,8 @@ export default function ProgressTracker({ jobId, onComplete, onError }) {
                 )}
               </div>
 
-              {/* Done checkmark on right */}
               {status === "done" && <div className="step-check">done</div>}
 
-              {/* Spinner for active */}
               {status === "active" && (
                 <div className="spinner" aria-label="In progress" />
               )}
@@ -268,6 +285,14 @@ export default function ProgressTracker({ jobId, onComplete, onError }) {
               ? "⚡ Live"
               : ""}
           {wsStatus === "connecting" ? "Connecting…" : ""}
+        </span>
+        <span className="tracker-elapsed">
+          {elapsed > 0 && wsStatus !== "done"
+            ? `Elapsed: ${formatDuration(elapsed)}`
+            : ""}
+          {wsStatus === "done"
+            ? `Completed in ${formatDuration(elapsed)}`
+            : ""}
         </span>
         <span className="tracker-pct">{statusText()}</span>
       </div>

@@ -774,6 +774,21 @@ video {
     font-family: var(--font-mono);
 }
 
+.tracker-eta {
+    text-align: right;
+    font-size: 12px;
+    font-family: var(--font-mono);
+    color: var(--accent);
+    padding: 6px 4px 0;
+    letter-spacing: -0.2px;
+}
+
+.tracker-elapsed {
+    font-size: 11px;
+    color: var(--text-dim);
+    font-family: var(--font-mono);
+}
+
 /* ── Error State ── */
 .error-card {
     background: var(--bg-card);
