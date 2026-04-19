@@ -2,7 +2,6 @@
 AutoMotion — FastAPI Application
 Main entry point for the backend server.
 """
-import uuid
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
