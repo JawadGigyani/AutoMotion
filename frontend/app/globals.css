@@ -862,6 +862,27 @@ video {
     font-family: var(--font-mono);
 }
 
+.share-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text-muted);
+    transition: all var(--transition);
+    flex-shrink: 0;
+}
+
+.share-btn:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+    background: rgba(230, 57, 70, 0.04);
+}
+
 /* ── Action Row (post-generation) ── */
 .action-row {
     display: flex;
