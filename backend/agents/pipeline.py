@@ -428,6 +428,29 @@ async def render_video(state: PipelineState) -> dict[str, Any]:
     except Exception as e:
         print(f"  [SRT] Warning: subtitle generation failed: {e}")
 
+    # Generate thumbnail (screenshot of the title scene)
+    thumbnail_path = None
+    try:
+        scenes_for_thumb = state.get("script", {}).get("scenes", [])
+        if scenes_for_thumb:
+            thumb_output = str((job_dir / "thumbnail.png").resolve())
+            thumb_payload = {
+                "scenes": scene_timing[:1],  # Only title scene
+                "theme": theme,
+                "outputPath": thumb_output,
+            }
+            async with httpx.AsyncClient(timeout=120.0) as client:
+                thumb_resp = await client.post(
+                    f"{REMOTION_RENDER_URL}/thumbnail", json=thumb_payload
+                )
+                if thumb_resp.status_code == 200 and thumb_resp.json().get("success"):
+                    thumbnail_path = thumb_output
+                    print(f"  [THUMB] Thumbnail saved → {thumb_output}")
+                else:
+                    print(f"  [THUMB] Warning: {thumb_resp.text}")
+    except Exception as e:
+        print(f"  [THUMB] Warning: thumbnail generation failed: {e}")
+
     await _report_progress(job_id, "render_video", 100, "Video ready!")
 
     result = {
@@ -437,6 +460,8 @@ async def render_video(state: PipelineState) -> dict[str, Any]:
     }
     if subtitle_path:
         result["subtitle_path"] = subtitle_path
+    if thumbnail_path:
+        result["thumbnail_path"] = thumbnail_path
 
     return result
 

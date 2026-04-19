@@ -122,6 +122,10 @@ async def _run_pipeline_task(job_id: str, repo_url: str, theme_id: str = None):
         if result.get("subtitle_path"):
             jobs[job_id]["subtitle_url"] = f"/outputs/{job_id}/subtitles.srt"
 
+        # Thumbnail URL (if thumbnail was generated)
+        if result.get("thumbnail_path"):
+            jobs[job_id]["thumbnail_url"] = f"/outputs/{job_id}/thumbnail.png"
+
         # Send final WebSocket update
         await send_progress_update(job_id, {
             "step": "complete",
@@ -294,6 +298,7 @@ async def get_gallery():
                 "theme": job.get("theme", ""),
                 "video_url": job.get("video_url", ""),
                 "subtitle_url": job.get("subtitle_url"),
+                "thumbnail_url": job.get("thumbnail_url"),
                 "created_at": job.get("created_at", 0),
                 "is_sample": False,
             })

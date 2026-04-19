@@ -8,7 +8,7 @@
 import express from "express";
 import cors from "cors";
 import { bundle } from "@remotion/bundler";
-import { renderMedia, selectComposition } from "@remotion/renderer";
+import { renderMedia, renderStill, selectComposition } from "@remotion/renderer";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -125,6 +125,60 @@ app.post("/render", async (req, res) => {
     res.json({ success: true, path: outputPath });
   } catch (err) {
     console.error("❌ Render error:", err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── Thumbnail endpoint ──
+app.post("/thumbnail", async (req, res) => {
+  console.log("\n🖼 Thumbnail request received");
+
+  try {
+    const { scenes, theme, outputPath } = req.body;
+
+    if (!scenes || !outputPath) {
+      return res.status(400).json({
+        error: "Missing required fields: scenes, outputPath",
+      });
+    }
+
+    const serveUrl = await ensureBundle();
+
+    // Build input props with a single title scene, 90 frames (3s)
+    const inputProps = {
+      scenes: scenes.slice(0, 1).map((s) => ({ ...s, durationInFrames: 90, startFrame: 0 })),
+      audioUrl: "",
+      totalFrames: 90,
+      fps: 30,
+      theme: theme || { id: "dark_cinematic" },
+    };
+
+    const compositionOpts = {
+      serveUrl,
+      id: "RepoReel",
+      inputProps,
+      port: 3101,
+    };
+    if (chromiumPath) compositionOpts.chromiumExecutable = chromiumPath;
+
+    const composition = await selectComposition(compositionOpts);
+
+    const stillOpts = {
+      composition,
+      serveUrl,
+      output: outputPath,
+      inputProps,
+      frame: 15, // 0.5s in — animations are visible
+      port: 3101,
+    };
+    if (chromiumPath) stillOpts.chromiumExecutable = chromiumPath;
+
+    await renderStill(stillOpts);
+
+    console.log(`✅ Thumbnail saved → ${outputPath}`);
+    res.json({ success: true, path: outputPath });
+  } catch (err) {
+    console.error("❌ Thumbnail error:", err.message);
     res.status(500).json({ error: err.message });
   }
 });

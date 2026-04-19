@@ -141,10 +141,20 @@ export default function GalleryPage() {
                   <div
                     className="gallery-thumb"
                     style={{
-                      background: `linear-gradient(135deg, ${themeColor}22 0%, ${themeColor}08 100%)`,
+                      background: entry.thumbnail_url
+                        ? "#000"
+                        : `linear-gradient(135deg, ${themeColor}22 0%, ${themeColor}08 100%)`,
                     }}
                   >
-                    <div className="gallery-thumb-icon">🎬</div>
+                    {entry.thumbnail_url ? (
+                      <img
+                        src={`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"}${entry.thumbnail_url}`}
+                        alt={`${repoName} thumbnail`}
+                        style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                      />
+                    ) : (
+                      <div className="gallery-thumb-icon">🎬</div>
+                    )}
                     {isSample && (
                       <span className="gallery-sample-badge">Sample</span>
                     )}
