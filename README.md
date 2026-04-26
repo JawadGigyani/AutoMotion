@@ -5,7 +5,7 @@
 [![Devpost Project](https://img.shields.io/badge/Project-Devpost-blue?style=for-the-badge&logo=devpost)](https://orion-build-challenge.devpost.com/)
 [![Watch the Demo on YouTube](https://img.shields.io/badge/YouTube-Watch_Demo-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/watch?v=Gm8zfuQ1-ro)
 
-AutoMotion is an AI-powered platform that ingests public GitHub repositories, analyzes the architecture and source code using a multi-agent pipeline, and synthesizes a fully narrated, dynamically animated 1080p MP4 explainer video — synced to the millisecond. Paste a URL, get a video.
+AutoMotion is an AI-powered platform that ingests public GitHub repositories, analyzes the architecture and source code using a multi-agent pipeline, and synthesizes a fully narrated, dynamically animated 1080p MP4 explainer video, synced to the millisecond. Paste a URL, get a video.
 
 ---
 
@@ -163,13 +163,6 @@ ELEVENLABS_API_KEY=your_elevenlabs_api_key
 
 # Optional — Higher GitHub API rate limits
 GITHUB_TOKEN=your_github_token
-
-# Optional — Override defaults
-# FEATHERLESS_BASE_URL=https://api.featherless.ai/v1
-# FEATHERLESS_CODE_MODEL=Qwen/Qwen2.5-Coder-32B-Instruct
-# FEATHERLESS_GENERAL_MODEL=Qwen/Qwen2.5-72B-Instruct
-# REMOTION_RENDER_URL=http://localhost:3001
-# BACKEND_URL=http://localhost:8000
 ```
 
 Create `frontend/.env.local`:
@@ -365,19 +358,11 @@ AutoMotion/
 
 ### Backend Environment Variables (`backend/.env`)
 
-| Variable | Required | Default | Description |
-|----------|----------|---------|-------------|
-| `FEATHERLESS_API_KEY` | Yes | — | Featherless.ai API key for LLM access |
-| `ELEVENLABS_API_KEY` | Yes | — | ElevenLabs API key for TTS |
-| `GITHUB_TOKEN` | No | — | GitHub PAT for higher rate limits |
-| `FEATHERLESS_BASE_URL` | No | `https://api.featherless.ai/v1` | LLM API base URL |
-| `FEATHERLESS_CODE_MODEL` | No | `Qwen/Qwen2.5-Coder-32B-Instruct` | Model for code analysis |
-| `FEATHERLESS_GENERAL_MODEL` | No | `Qwen/Qwen2.5-72B-Instruct` | Model for script writing |
-| `FEATHERLESS_FALLBACK_MODEL` | No | `THUDM/glm-4-9b-chat` | Fallback model |
-| `ELEVENLABS_VOICE_ID` | No | — | Default TTS voice (UI can override) |
-| `ELEVENLABS_MODEL_ID` | No | `eleven_multilingual_v2` | ElevenLabs model |
-| `REMOTION_RENDER_URL` | No | `http://localhost:3001` | Render server URL |
-| `BACKEND_URL` | No | `http://localhost:8000` | Backend self-reference |
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `FEATHERLESS_API_KEY` | Yes | Featherless.ai API key for LLM access |
+| `ELEVENLABS_API_KEY` | Yes | ElevenLabs API key for TTS |
+| `GITHUB_TOKEN` | No | GitHub PAT for higher rate limits |
 
 ### Frontend Environment Variables (`frontend/.env.local`)
 
@@ -436,10 +421,12 @@ Generated videos are automatically cleaned up after **45 minutes**. Sample video
 
 ## 👥 Team
 
-**Muhammad Jawad** — AI Engineer
-
+| Member | Role | Responsibilities |
+|--------|------|------------------|
+| **Muhammad Jawad** | AI Engineer & Backend Lead | LangGraph pipeline architecture, Featherless.ai LLM integration (Qwen2.5-Coder-32B + 72B), prompt engineering for repo analysis and script direction, ElevenLabs TTS integration, voice style adaptation, frame-audio synchronization |
+| **Ali Ahmad** | Full-Stack Developer & AI Engineer | Next.js frontend, Remotion video rendering engine, React scene components, AI-driven theme layout system, Docker containerization, DigitalOcean deployment |
+| **Hamad Khan** | AI Engineer & Infrastructure | AI agent prompt tuning, LLM output validation and fallback logic, WebSocket real-time progress system, GitHub API integration, subtitle generation, CI/CD pipeline |
 ---
-
 ## 🤝 Developed For
 
 **[Orion Build Hackathon 2026](https://orion-build-challenge.devpost.com/)**
